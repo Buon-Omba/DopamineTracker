@@ -1,0 +1,1 @@
+ExHale is an open-source app designed to help you track the time since you last smoked and see the progress you've made. It calculates the number of cigarettes avoided and the money you've saved based on your smoking habits.

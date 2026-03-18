@@ -1,0 +1,2 @@
+C:/Users/AdminAkro/Cursor-project/ExHale/android/app/.cxx/Debug/1t15395i/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/AdminAkro/Cursor-project/ExHale/android/app/.cxx/Debug/1t15395i/x86_64/CMakeFiles/rebuild_cache.dir

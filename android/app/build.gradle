@@ -1,0 +1,62 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace = "it.buonomba.DopamineTracker"
+    // Health Connect richiede almeno 34
+    compileSdk = 36
+
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    defaultConfig {
+        applicationId = "it.buonomba.DopamineTracker"
+        minSdk = 26
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0.0"
+    }
+
+    signingConfigs {
+        release {
+            def keystorePropertiesFile = rootProject.file('key.properties')
+            if (keystorePropertiesFile.exists()) {
+                def keystoreProperties = new Properties()
+                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+// Forza l'ignoranza del controllo dei metadati AAR per evitare il blocco su AGP 8.9.1
+tasks.withType(com.android.build.gradle.internal.tasks.CheckAarMetadataTask).configureEach {
+    enabled = false
+}
+
+flutter {
+    source = "../.."
+}

@@ -1,0 +1,390 @@
+{
+  "cancel": "Annulla",
+  "@cancel": {},
+  "delete": "Elimina",
+  "@delete": {},
+  "close": "Chiudi",
+  "@close": {},
+  "confirm": "Conferma",
+  "@confirm": {},
+  "name": "Nome",
+  "@name": {},
+  "n_a": "N/D",
+  "@n_a": {},
+  "save": "Salva",
+  "@save": {},
+
+  "aboutScreenTitle": "Informazioni su Dopamine Tracker",
+  "@aboutScreenTitle": {},
+  "aboutDescriptionTitle": "Dopamine Tracker",
+  "@aboutDescriptionTitle": {},
+  "aboutDescriptionText": "Dopamine Tracker è un app open-source pensata per aiutarti a tracciare il tempo dall'ultimo stimolo di dopamina e vedere i progressi fatti. Calcola gli stimoli evitati e i benefici per la salute in base alle tue abitudini. Questa app è un fork di https://codeberg.org/retiolus/ExHale che aggiunge la funzionalità calendario.",
+  "@aboutDescriptionText": {},
+  "aboutPrivacyTitle": "Privacy e Open Source",
+  "@aboutPrivacyTitle": {},
+  "aboutPrivacyText": "Dopamine Tracker rispetta la tua privacy. Non traccia i tuoi dati e tutte le tue informazioni sono memorizzate localmente sul tuo dispositivo. Il codice sorgente è disponibile per la revisione, garantendo completa trasparenza.",
+  "@aboutPrivacyText": {},
+  "aboutLinksTitle": "Collegamenti",
+  "@aboutLinksTitle": {},
+  "aboutLinksViewSourceCode": "Visualizza Codice Sorgente",
+  "@aboutLinksViewSourceCode": {},
+  "aboutLinksReportAnIssue": "Segnala un Problema",
+  "@aboutLinksReportAnIssue": {},
+  "aboutCreditsTitle": "Crediti",
+  "@aboutCreditsTitle": {},
+  "aboutCreditsText": "L'icona dell'app è fornita da OpenMoji - un progetto emoji open-source. Grazie a OpenMoji per il loro fantastico lavoro!",
+  "@aboutCreditsText": {},
+  "aboutCreditsOpenMoji": "Visita OpenMoji",
+  "@aboutCreditsOpenMoji": {},
+  "aboutCreditsMyWebsite": "Sito di Retiolus. Lo ringrazio infinitamente per la base di questa app.",
+  "@aboutCreditsMyWebsite": {},
+  "aboutCreditsLiberapay": "Supportami su Liberapay",
+  "@aboutCreditsLiberapay": {},
+
+  "configSnackBarValidNumber": "Inserisci numeri validi prima di salvare.",
+  "@configSnackBarValidNumber": {},
+  "configDialogEnableFriendsTitle": "Abilita Amici",
+  "@configDialogEnableFriendsTitle": {},
+  "configDialogEnableFriendsDataText": "Abilitare gli Amici richiede una connessione internet e condividerà l'UID casuale del tuo dispositivo e le statistiche con il server: dopamine-tracker.retiolus.net.",
+  "@configDialogEnableFriendsDataText": {},
+  "configDialogEnableFriendsSourceCodeText": "Il codice sorgente dell'API è disponibile su:",
+  "@configDialogEnableFriendsSourceCodeText": {},
+  "configScreenTitle": "Impostazioni",
+  "@configScreenTitle": {},
+  "configOptionEnableFriendsText": "Abilita Amici",
+  "@configOptionEnableFriendsText": {},
+  "configOptionPacketsPerWeekText": "Media occorrenze settimanali",
+  "@configOptionPacketsPerWeekText": {},
+  "configOptionCigarettesPerPacketText": "Intensità media giornaliera",
+  "@configOptionCigarettesPerPacketText": {},
+  "configOptionCounterStartDateText": "Data di Inizio Contatore",
+  "@configOptionCounterStartDateText": {},
+  "configOptionCounterStartDateSelectText": "Seleziona una data",
+  "@configOptionCounterStartDateSelectText": {},
+  "configOptionPriceHistoryText": "Cronologia Miglioramenti",
+  "@configOptionPriceHistoryText": {},
+  "configOptionPriceHistoryPriceText": "Intensità",
+  "@configOptionPriceHistoryPriceText": {},
+  "configButtonAddPriceText": "Aggiungi voce",
+  "@configButtonAddPriceText": {},
+  "configOptionThemeTitle": "Tema",
+  "configOptionThemeLight": "Chiaro",
+  "configOptionThemeDark": "Scuro",
+  "configOptionThemeSystem": "Sistema",
+  "configDataBackupTitle": "Backup dati",
+  "@configDataBackupTitle": {},
+  "configExportDataButton": "Esporta dati (JSON)",
+  "@configExportDataButton": {},
+  "configImportDataButton": "Importa dati (JSON)",
+  "@configImportDataButton": {},
+  "configExportSuccessMessage": "Export pronto. Usa il menu condividi per salvare il file.",
+  "@configExportSuccessMessage": {},
+  "configExportErrorMessage": "Export fallito. Riprova.",
+  "@configExportErrorMessage": {},
+  "configImportSuccessMessage": "Dati importati con successo. Riavvia l'app se necessario.",
+  "@configImportSuccessMessage": {},
+  "configImportErrorMessage": "File non valido o corrotto. Usa un file di backup JSON di Dopamine Tracker.",
+  "@configImportErrorMessage": {},
+  "configImportCancelled": "Importazione annullata.",
+  "@configImportCancelled": {},
+
+  "friendsDialogUIDYourQRText": "Il Tuo Codice QR",
+  "@friendsDialogUIDYourQRText": {},
+  "friendsDialogUIDNotAvailable": "Nessun UID Utente disponibile",
+  "@friendsDialogUIDNotAvailable": {},
+  "friendsDialogUIDNoUserUID": "Nessun UID Utente",
+  "@friendsDialogUIDNoUserUID": {},
+  "friendsDialogUIDCopiedToClipboard": "Copiato negli appunti!",
+  "@friendsDialogUIDCopiedToClipboard": {},
+  "friendsDialogUIDCopyUID": "Copia UID",
+  "@friendsDialogUIDCopyUID": {},
+  "friendsDialogAddFriendTitle": "Aggiungi Amico",
+  "@friendsDialogAddFriendTitle": {},
+  "friendsDialogAddFriendNameText": "Nome",
+  "@friendsDialogAddFriendNameText": {},
+  "friendsDialogAddFriendUIDText": "UID",
+  "@friendsDialogAddFriendUIDText": {},
+  "friendsSnackBarSyncSuccessfull": "Dati sincronizzati con successo!",
+  "@friendsSnackBarSyncSuccessfull": {},
+  "friendsSnackBarSyncFailed": "Sincronizzazione dati fallita.",
+  "@friendsSnackBarSyncFailed": {},
+  "friendsScreenTitle": "Amici",
+  "@friendsScreenTitle": {},
+  "friendsNoFriendsText": "Nessun amico ancora, aggiungine alcuni per vedere i loro progressi!",
+  "@friendsNoFriendsText": {},
+  "friendsLastSmokedText": "Ultimo Reset: \n {lastSmoked}",
+  "@friendsLastSmokedText": {
+    "placeholders": {
+      "lastSmoked":{
+        "type": "String",
+        "example": "N/A"
+      }
+    }
+  },
+  "friendsCigarettesAvoidedText": "Stimoli evitati: \n {cigAvoided}",
+  "@friendsCigarettesAvoidedText": {
+    "placeholders": {
+      "cigAvoided":{
+        "type": "String",
+        "example": "0"
+      }
+    }
+  },
+  "friendsMoneySavedText": "Punti beneficio: \n {moneySaved}",
+  "@friendsMoneySavedText": {
+    "placeholders": {
+      "moneySaved":{
+        "type": "String",
+        "example": "0.0"
+      }
+    }
+  },
+  "friendsLastAnnouncedText": "Ultimo Annuncio: \n {lastAnnounced}",
+  "@friendsLastAnnouncedText": {
+    "placeholders": {
+      "lastAnnounced":{
+        "type": "String",
+        "example": "N/D"
+      }
+    }
+  },
+  "friendsButtonShowUID": "Mostra il Mio UID",
+  "@friendsButtonShowUID": {},
+  "friendsButtonShowUIDEnterUIDText": "Inserisci UID Manualmente",
+  "@friendsButtonShowUIDEnterUIDText": {},
+  "friendsButtonAddFriend": "Aggiungi Amico",
+  "@friendsButtonAddFriend": {},
+  "friendsDialogEditFriendsNameTitle": "Modifica Nome Amico",
+  "@friendsDialogEditFriendsNameTitle": {},
+
+  "health2DaysTitle": "2 giorni dopo il reset",
+  "health2DaysText": "I recettori della dopamina iniziano a ri-sensibilizzarsi.",
+
+  "health3DaysTitle": "3 giorni dopo il reset",
+  "health3DaysText": "La chiarezza mentale inizia a migliorare e la concentrazione aumenta.",
+
+  "health7DaysTitle": "7 giorni dopo il reset",
+  "health7DaysText": "La stabilità dell'umore ritorna gradualmente.",
+
+  "health2WeeksTitle": "2 settimane dopo il reset",
+  "health2WeeksText": "La qualità del sonno migliora.",
+
+  "health1MonthTitle": "1 mese dopo il reset",
+  "health1MonthText": "La forza di volontà diventa più forte.",
+
+  "health2MonthsTitle": "2 mesi e mezzo dopo il reset",
+  "health2MonthsText": "Ritorna la gioia naturale nelle attività semplici.",
+
+  "health3MonthsTitle": "3 mesi dopo il reset",
+  "health3MonthsText": "I livelli di dopamina sono quasi completamente tornati alla normalità.",
+
+  "health1YearTitle": "1 anno dopo il reset",
+  "health1YearText": "I percorsi cerebrali si sono significativamente ricollegati.",
+
+  "health5YearsTitle": "5 anni dopo il reset",
+  "health5YearsText": "Benefici cognitivi sostenuti a lungo termine.",
+
+  "health15YearsTitle": "10-15 anni dopo il reset",
+  "health15YearsText": "Massima resilienza mentale raggiunta.",
+
+  "homeMenuConfig": "Impostazioni",
+  "@homeMenuConfig": {},
+  "homeMenuAbout": "Informazioni",
+  "@homeMenuAbout": {},
+  "homeSnackBarFriendsDisabled": "La schermata Amici è disabilitata nelle impostazioni.",
+  "@homeSnackBarFriendsDisabled": {},
+  "homeCigarettesAvoidedText": "Stimoli evitati: \n {cigarettesAvoided}",
+  "@homeCigarettesAvoidedText": {
+    "placeholders": {
+      "cigarettesAvoided":{
+        "type": "String",
+        "example": "0"
+      }
+    }
+  },
+  "homeMoneySavedText": "Punteggio benefici: \n {moneySaved}",
+  "@homeMoneySavedText": {
+    "placeholders": {
+      "moneySaved":{
+        "type": "String",
+        "example": "0.0"
+      }
+    }
+  },
+  "homeRestartProgressText": "Riavvia Progresso",
+  "@homeRestartProgressText": {},
+  "homeTagline": "Traccia, registra e resta costante.",
+  "@homeTagline": {},
+  "homeSinceLastTitle": "Tempo dall'ultimo reset",
+  "@homeSinceLastTitle": {},
+  "homeLastSmokedLabel": "Ultima registrazione: {date}",
+  "@homeLastSmokedLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "1 gen 2024"
+      }
+    }
+  },
+  "homeNotStartedYet": "Non ancora iniziato",
+  "@homeNotStartedYet": {},
+  "homeQuickActionsTitle": "Azioni rapide",
+  "@homeQuickActionsTitle": {},
+  "homeSmokedTodayText": "Reset oggi: \n {cigarettesSmoked}",
+  "@homeSmokedTodayText": {
+    "placeholders": {
+      "cigarettesSmoked": {
+        "type": "String",
+        "example": "0"
+      }
+    }
+  },
+  "homeHoursWithoutSmokingText": "Ore senza stimoli: \n {hours}",
+  "@homeHoursWithoutSmokingText": {
+    "placeholders": {
+      "hours": {
+        "type": "String",
+        "example": "0"
+      }
+    }
+  },
+  "homeLogCigaretteButton": "Registra un reset",
+  "@homeLogCigaretteButton": {},
+  "homeViewCalendarLogButton": "Calendario",
+  "@homeViewCalendarLogButton": {},
+  "homeSnackBarCigaretteLogged": "Reset registrato per oggi.",
+  "@homeSnackBarCigaretteLogged": {},
+
+  "logScreenTitle": "Registro Dopamina",
+  "@logScreenTitle": {},
+  "logScreenToday": "Oggi",
+  "@logScreenToday": {},
+  "logScreenCigaretteSingular": "reset",
+  "@logScreenCigaretteSingular": {},
+  "logScreenCigarettePlural": "reset",
+  "@logScreenCigarettePlural": {},
+  "logScreenSelectedDayHeader": "Giorno selezionato",
+  "@logScreenSelectedDayHeader": {},
+  "logScreenSelectedDayText": "{count} reset il {date}",
+  "@logScreenSelectedDayText": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "0"
+      },
+      "date": {
+        "type": "String",
+        "example": "1 gen 2024"
+      }
+    }
+  },
+  "logScreenEmptyHint": "Nessuna voce ancora. Registra ogni reset per costruire il tuo calendario.",
+  "@logScreenEmptyHint": {},
+  "logScreenChartTitle": "Reset registrati",
+  "@logScreenChartTitle": {},
+  "logScreenRange7d": "7 giorni",
+  "@logScreenRange7d": {},
+  "logScreenRange14d": "14 giorni",
+  "@logScreenRange14d": {},
+  "logScreenRange30d": "1 mese",
+  "@logScreenRange30d": {},
+  "logScreenRange180d": "6 mesi",
+  "@logScreenRange180d": {},
+  "logScreenRange365d": "1 anno",
+  "@logScreenRange365d": {},
+  "logScreenChartEmpty": "Nessun dato in questo intervallo ancora.",
+  "@logScreenChartEmpty": {},
+  "logEditTitle": "Modifica voce",
+  "@logEditTitle": {},
+  "logEditCountLabel": "Reset il {date}",
+  "@logEditCountLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "1 gen 2024"
+      }
+    }
+  },
+
+  "navigationFriendsDisabled": "La funzione Amici è disabilitata. Abilitala nelle impostazioni.",
+  "navigationBarHome": "Home",
+  "@navigationBarHome": {},
+  "navigationBarHealthGoals": "Traguardi",
+  "@navigationBarHealthGoals": {},
+  "navigationBarCalendar": "Calendario",
+  "@navigationBarCalendar": {},
+
+  "healthScreenNoCigarettesYetTitle": "Traguardi - Registra il tuo primo reset",
+
+  "statsScreenTitle": "Statistiche Salute",
+  "statsHeartRateTitle": "Battito Cardiaco (Media 7gg)",
+  "statsStressTitle": "Livello Stress / HRV (Media 7gg)",
+  "statsAuthorizeButton": "Autorizza Accesso Salute",
+  "statsNoData": "Nessun dato disponibile",
+  "statsLoading": "Caricamento dati salute...",
+
+  "navigationBarDailyLog": "Registro Giornaliero",
+  "dailyLogCategoryMood": "Umore",
+  "dailyLogCategorySymptoms": "Sintomi",
+  "dailyLogCategoryActivity": "Attività fisica",
+  "dailyLogCategoryOther": "Altro",
+  "dailyLogCategoryContraceptives": "Contraccettivi orali",
+
+  "moodCalm": "Calma",
+  "moodHappy": "Felice",
+  "moodEnergetic": "Energetica",
+  "moodLively": "Vivace",
+  "moodMoodSwings": "Sbalzi di umore",
+  "moodIrritated": "Irritata",
+  "moodSad": "Triste",
+  "moodAnxious": "Ansiosa",
+  "moodDepressed": "Depressa",
+  "moodGuilt": "Sensi di colpa",
+  "moodObsessiveThoughts": "Pensieri ossessivi",
+  "moodLowEnergy": "Poca energia",
+  "moodApathetic": "Apatica",
+  "moodConfused": "Confusa",
+  "moodSelfCritical": "Molto autocritica",
+
+  "symptomFine": "Va tutto bene",
+  "symptomCramps": "Crampi",
+  "symptomBreastTension": "Tensione al seno",
+  "symptomHeadache": "Mal di testa",
+  "symptomAcne": "Acne",
+  "symptomBackPain": "Mal di schiena",
+  "symptomFatigue": "Stanchezza",
+  "symptomCravings": "Voglie",
+  "symptomInsomnia": "Insonnia",
+
+  "activityNone": "Nessuna attività",
+  "activityYoga": "Yoga",
+  "activityGym": "Palestra",
+  "activityAerobics": "Aerobica e danza",
+  "activitySwimming": "Nuoto",
+  "activityTeamSports": "Sport di squadra",
+  "activityRunning": "Corsa",
+  "activityCycling": "Bicicletta",
+  "activityWalking": "Camminare",
+
+  "otherTravel": "Viaggio",
+  "otherStress": "Stress",
+  "otherMeditation": "Meditazione",
+  "otherJournaling": "Scrivere un diario",
+  "otherKegel": "Esercizi di Kegel",
+  "otherBreathing": "Esercizi di respirazione",
+  "otherIllness": "Malattia o trauma",
+  "otherAlcohol": "Alcool",
+
+  "contraceptiveTaken": "Preso",
+  "contraceptiveMissed": "Dimenticato",
+
+  "logDailyScore": "Punteggio Benessere Giornaliero: {score}",
+  "@logDailyScore": {
+    "placeholders": {
+      "score": {
+        "type": "String",
+        "example": "0"
+      }
+    }
+  }
+}
