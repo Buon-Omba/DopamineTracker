@@ -1,41 +1,93 @@
 import 'dart:convert';
-
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dopamine_tracker/main.dart'; 
 
+class Addiction {
+  final String id;
+  final String name;
+
+  Addiction({required this.id, required this.name});
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name};
+  factory Addiction.fromJson(Map<String, dynamic> json) => Addiction(id: json['id'], name: json['name']);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Addiction && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
+}
+
 class DopamineLogService {
-  static const _logKey = 'dopamineLog'; // Changed key will reset data, but matches request
-  static const _lastTriggerKey = 'lastTrigger';
+  static const _addictionsKey = 'addictions';
+  static const _logKeyPrefix = 'dopamineLog_';
+  static const _lastTriggerKeyPrefix = 'lastTrigger_';
   static const _hasStartedKey = 'hasStarted';
 
-  /// Record a trigger at the given [timestamp] (defaults to now).
-  static Future<void> logTrigger({DateTime? timestamp}) async {
+  static String _formatName(String input) {
+    if (input.trim().isEmpty) return "";
+    final trimmed = input.trim();
+    return trimmed[0].toUpperCase() + trimmed.substring(1).toLowerCase();
+  }
+
+  static Future<List<Addiction>> getAddictions() async {
     final prefs = await SharedPreferences.getInstance();
-    final log = await _loadLog(prefs);
+    final stored = prefs.getString(_addictionsKey);
+    if (stored == null) return [];
+    try {
+      final List<dynamic> decoded = jsonDecode(stored);
+      return decoded.map((item) => Addiction.fromJson(item)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  static Future<void> addAddiction(String name) async {
+    final prefs = await SharedPreferences.getInstance();
+    final addictions = await getAddictions();
+    final id = DateTime.now().millisecondsSinceEpoch.toString();
+    final formattedName = _formatName(name);
+    
+    addictions.add(Addiction(id: id, name: formattedName));
+    await prefs.setString(_addictionsKey, jsonEncode(addictions.map((e) => e.toJson()).toList()));
+    await prefs.setBool(_hasStartedKey, true);
+  }
+
+  static Future<void> removeAddiction(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final addictions = await getAddictions();
+    addictions.removeWhere((a) => a.id == id);
+    await prefs.setString(_addictionsKey, jsonEncode(addictions.map((e) => e.toJson()).toList()));
+    await prefs.remove(_logKeyPrefix + id);
+    await prefs.remove(_lastTriggerKeyPrefix + id);
+  }
+
+  static Future<void> logTrigger(String addictionId, {DateTime? timestamp}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final log = await _loadLog(prefs, addictionId);
     final now = timestamp ?? DateTime.now();
     final dayKey = _formatDate(now);
 
     log[dayKey] = (log[dayKey] ?? 0) + 1;
 
-    await prefs.setString(_logKey, jsonEncode(log));
-    await prefs.setString(_lastTriggerKey, now.toIso8601String());
-    await prefs.setBool(_hasStartedKey, true);
+    await prefs.setString(_logKeyPrefix + addictionId, jsonEncode(log));
+    await prefs.setString(_lastTriggerKeyPrefix + addictionId, now.toIso8601String());
     await DopamineTrackerApp.updateHomeWidgets(); 
   }
 
-  /// Returns the number of triggers on [date].
-  static Future<int> countForDate(DateTime date) async {
+  static Future<int> countForDate(String addictionId, DateTime date) async {
     final prefs = await SharedPreferences.getInstance();
-    final log = await _loadLog(prefs);
+    final log = await _loadLog(prefs, addictionId);
     final dayKey = _formatDate(date);
     return log[dayKey] ?? 0;
   }
 
-  /// Set an explicit count for [date]. If [count] is 0, removes the entry.
-  static Future<void> setCountForDate(DateTime date, int count) async {
+  static Future<void> setCountForDate(String addictionId, DateTime date, int count) async {
     final prefs = await SharedPreferences.getInstance();
-    final log = await _loadLog(prefs);
+    final log = await _loadLog(prefs, addictionId);
     final dayKey = _formatDate(date);
 
     if (count <= 0) {
@@ -44,35 +96,56 @@ class DopamineLogService {
       log[dayKey] = count;
     }
 
-    await prefs.setString(_logKey, jsonEncode(log));
+    await prefs.setString(_logKeyPrefix + addictionId, jsonEncode(log));
     await DopamineTrackerApp.updateHomeWidgets(); 
   }
 
-  /// Remove a day's entry completely.
-  static Future<void> removeDate(DateTime date) async {
+  static Future<void> removeDate(String addictionId, DateTime date) async {
     final prefs = await SharedPreferences.getInstance();
-    final log = await _loadLog(prefs);
+    final log = await _loadLog(prefs, addictionId);
     final dayKey = _formatDate(date);
     log.remove(dayKey);
-    await prefs.setString(_logKey, jsonEncode(log));
+    await prefs.setString(_logKeyPrefix + addictionId, jsonEncode(log));
     await DopamineTrackerApp.updateHomeWidgets(); 
   }
 
-  /// Returns the whole log as a map keyed by DateTime midnight (local).
-  static Future<Map<DateTime, int>> loadCalendarLog() async {
+  static Future<Map<DateTime, int>> loadCalendarLog(String addictionId) async {
     final prefs = await SharedPreferences.getInstance();
-    final log = await _loadLog(prefs);
+    final log = await _loadLog(prefs, addictionId);
     return log.map(
       (key, value) => MapEntry(_parseDate(key), value),
     );
   }
 
-  static Future<Map<String, int>> _loadLog(SharedPreferences prefs) async {
-    final stored = prefs.getString(_logKey);
-    if (stored == null) return {};
+  static Future<DateTime?> getLastTrigger(String addictionId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString(_lastTriggerKeyPrefix + addictionId);
+    if (stored == null) return null;
+    return DateTime.parse(stored);
+  }
 
-    final decoded = jsonDecode(stored) as Map<String, dynamic>;
-    return decoded.map((key, value) => MapEntry(key, (value as num).toInt()));
+  static Future<Map<String, int>> _loadLog(SharedPreferences prefs, String addictionId) async {
+    final stored = prefs.getString(_logKeyPrefix + addictionId);
+    if (stored == null) {
+      if (addictionId == "legacy") {
+         final oldStored = prefs.getString('dopamineLog');
+         if (oldStored != null) {
+           try {
+             return (jsonDecode(oldStored) as Map<String, dynamic>).map((k, v) => MapEntry(k, (v as num).toInt()));
+           } catch (e) {
+             return {};
+           }
+         }
+      }
+      return {};
+    }
+
+    try {
+      final decoded = jsonDecode(stored) as Map<String, dynamic>;
+      return decoded.map((key, value) => MapEntry(key, (value as num).toInt()));
+    } catch (e) {
+      return {};
+    }
   }
 
   static String _formatDate(DateTime date) {

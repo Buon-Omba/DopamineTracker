@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:dopamine_tracker/components/line_chart.dart';
 import 'package:dopamine_tracker/l10n/app_localizations.dart';
-
 import '../services/smoke_log_service.dart';
 
 enum ChartRange { week, twoWeeks, month, year }
@@ -23,6 +22,8 @@ class SmokingLogScreen extends StatefulWidget {
 }
 
 class _SmokingLogScreenState extends State<SmokingLogScreen> {
+  List<Addiction> _addictions = [];
+  Addiction? _selectedAddiction;
   Map<DateTime, int> _log = {};
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
@@ -31,11 +32,24 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
   @override
   void initState() {
     super.initState();
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    final list = await DopamineLogService.getAddictions();
+    if (!mounted) return;
+    setState(() {
+      _addictions = list;
+      if (_addictions.isNotEmpty) {
+        _selectedAddiction = _addictions.first;
+      }
+    });
     _loadLog();
   }
 
   Future<void> _loadLog() async {
-    final log = await DopamineLogService.loadCalendarLog();
+    if (_selectedAddiction == null) return;
+    final log = await DopamineLogService.loadCalendarLog(_selectedAddiction!.id);
     if (!mounted) return;
     setState(() {
       _log = log;
@@ -61,17 +75,7 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
 
   DateTime get _lastDay {
     final now = DateTime.now();
-    final baseline =
-        DateTime(now.year, now.month, now.day).add(const Duration(days: 365));
-
-    if (_log.isEmpty) {
-      return baseline;
-    }
-
-    final latest = _log.keys
-        .reduce((a, b) => a.isAfter(b) ? a : b)
-        .add(const Duration(days: 365));
-    return latest.isAfter(baseline) ? latest : baseline;
+    return DateTime(now.year, now.month, now.day).add(const Duration(days: 365));
   }
 
   @override
@@ -80,10 +84,21 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
     final localeString = Localizations.localeOf(context).toString();
     final formattedDate = DateFormat.yMMMMd(localeString).format(_selectedDay);
     final chartEntries = _buildRangeData(localeString);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.logScreenTitle),
+        title: _addictions.isEmpty 
+          ? Text(l10n?.logScreenTitle ?? 'Log')
+          : DropdownButton<Addiction>(
+              value: _selectedAddiction,
+              underline: const SizedBox(),
+              items: _addictions.map((a) => DropdownMenuItem(value: a, child: Text(a.name))).toList(),
+              onChanged: (val) {
+                setState(() => _selectedAddiction = val);
+                _loadLog();
+              },
+            ),
       ),
       body: RefreshIndicator(
         onRefresh: _loadLog,
@@ -190,23 +205,19 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
                           segments: [
                             ButtonSegment(
                               value: ChartRange.week,
-                              label: Text(AppLocalizations.of(context)!
-                                  .logScreenRange7d),
+                              label: Text(l10n?.logScreenRange7d ?? '7d'),
                             ),
                             ButtonSegment(
                               value: ChartRange.twoWeeks,
-                              label: Text(AppLocalizations.of(context)!
-                                  .logScreenRange14d),
+                              label: Text(l10n?.logScreenRange14d ?? '14d'),
                             ),
                             ButtonSegment(
                               value: ChartRange.month,
-                              label: Text(AppLocalizations.of(context)!
-                                  .logScreenRange30d),
+                              label: Text(l10n?.logScreenRange30d ?? '1m'),
                             ),
                             ButtonSegment(
                               value: ChartRange.year,
-                              label: Text(AppLocalizations.of(context)!
-                                  .logScreenRange365d),
+                              label: Text(l10n?.logScreenRange365d ?? '1y'),
                             ),
                           ],
                           selected: {_selectedRange},
@@ -222,13 +233,17 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
                     SizedBox(
                       height: 220,
                       child: LineChart(
-                          entries: chartEntries
-                              .map((e) => LineChartEntry(
-                                  label: e.label, value: e.value))
-                              .toList(),
-                          emptyLabel:
-                              AppLocalizations.of(context)!.logScreenChartEmpty,
-                          lineColor: Colors.indigo.shade400),
+                        datasets: [
+                          LineChartData(
+                            entries: chartEntries
+                                .map((e) => LineChartEntry(
+                                    label: e.label, value: e.value.toDouble()))
+                                .toList(),
+                            color: Colors.indigo.shade400,
+                          ),
+                        ],
+                        emptyLabel: l10n?.logScreenChartEmpty ?? 'Empty',
+                      ),
                     ),
                   ],
                 ),
@@ -236,16 +251,16 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              AppLocalizations.of(context)!.logScreenSelectedDayText(
+              l10n?.logScreenSelectedDayText(
                 selectedCount.toString(),
                 formattedDate,
-              ),
+              ) ?? '$selectedCount triggers on $formattedDate',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             if (_log.isEmpty)
               Text(
-                AppLocalizations.of(context)!.logScreenEmptyHint,
+                l10n?.logScreenEmptyHint ?? 'No entries',
                 style: const TextStyle(fontSize: 14, color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
@@ -277,9 +292,7 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
     String localeString, {
     bool monthMode = false,
   }) {
-    final format = monthMode
-        ? DateFormat.Md(localeString) // month and day label for 30 days
-        : DateFormat.Md(localeString); // compact label
+    final format = DateFormat.Md(localeString);
 
     return List.generate(days, (index) {
       final day = today.subtract(Duration(days: days - index - 1));
@@ -319,38 +332,40 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
   }
 
   Future<void> _showEditDialog(DateTime day) async {
+    if (_selectedAddiction == null) return;
     final initial = _countForDay(day);
     final controller = TextEditingController(text: initial.toString());
+    final l10n = AppLocalizations.of(context);
 
     final result = await showDialog<_EditResult>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.logEditTitle),
+        title: Text(l10n?.logEditTitle ?? 'Edit'),
         content: TextField(
           keyboardType: TextInputType.number,
           controller: controller,
           decoration: InputDecoration(
-            labelText: AppLocalizations.of(context)!.logEditCountLabel(
+            labelText: l10n?.logEditCountLabel(
                 DateFormat.yMMMd(Localizations.localeOf(context).toString())
-                    .format(day)),
+                    .format(day)) ?? 'Triggers',
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.cancel),
+            child: Text(l10n?.cancel ?? 'Cancel'),
           ),
           if (initial > 0)
             TextButton(
               onPressed: () => Navigator.pop(context, _EditResult.delete),
               child: Text(
-                AppLocalizations.of(context)!.delete,
+                l10n?.delete ?? 'Delete',
                 style: const TextStyle(color: Colors.red),
               ),
             ),
           TextButton(
             onPressed: () => Navigator.pop(context, _EditResult.save),
-            child: Text(AppLocalizations.of(context)!.save),
+            child: Text(l10n?.save ?? 'Save'),
           ),
         ],
       ),
@@ -359,10 +374,10 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
     if (result == null) return;
 
     if (result == _EditResult.delete) {
-      await DopamineLogService.removeDate(day);
+      await DopamineLogService.removeDate(_selectedAddiction!.id, day);
     } else if (result == _EditResult.save) {
       final parsed = int.tryParse(controller.text.trim()) ?? 0;
-      await DopamineLogService.setCountForDate(day, parsed);
+      await DopamineLogService.setCountForDate(_selectedAddiction!.id, day, parsed);
     }
 
     await _loadLog();
@@ -370,22 +385,3 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
 }
 
 enum _EditResult { save, delete }
-
-class _LineChart extends StatelessWidget {
-  final List<_BarEntry> entries;
-  final String emptyLabel;
-
-  const _LineChart({required this.entries, required this.emptyLabel});
-
-  @override
-  Widget build(BuildContext context) {
-    // Deprecated local chart; delegate to shared LineChart component.
-    return LineChart(
-      entries: entries
-          .map((e) => LineChartEntry(label: e.label, value: e.value))
-          .toList(),
-      emptyLabel: emptyLabel,
-      lineColor: Colors.indigo.shade400,
-    );
-  }
-}

@@ -590,4 +590,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String logDailyScore(String score) {
     return 'Daily Wellness Score: $score';
   }
+
+  @override
+  String logTodayHR(Object hr) {
+    return 'Heart Rate: $hr BPM';
+  }
+
+  @override
+  String logTodayStress(Object stress) {
+    return 'Stress (HRV): $stress ms';
+  }
 }

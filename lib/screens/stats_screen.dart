@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../components/navigation_bar.dart';
+import '../components/line_chart.dart';
 import '../services/health_service.dart';
+import '../services/smoke_log_service.dart';
+import '../services/daily_log_service.dart';
 import 'package:dopamine_tracker/l10n/app_localizations.dart';
 
 class StatsScreen extends StatefulWidget {
@@ -15,15 +17,32 @@ class StatsScreen extends StatefulWidget {
 
 class _StatsScreenState extends State<StatsScreen> {
   final HealthService _healthService = HealthService();
+  
+  List<Addiction> _addictions = [];
+  Addiction? _selectedAddiction;
+
   Map<DateTime, double> _heartRateData = {};
   Map<DateTime, double> _stressData = {};
+  Map<DateTime, int> _triggerLog = {};
+  Map<DateTime, DailyLogEntry> _dailyEntries = {};
   bool _isLoading = true;
   bool _isAuthorized = false;
 
   @override
   void initState() {
     super.initState();
-    _checkAuthorization();
+    _loadAddictionsAndCheckAuth();
+  }
+
+  Future<void> _loadAddictionsAndCheckAuth() async {
+    final list = await DopamineLogService.getAddictions();
+    setState(() {
+      _addictions = list;
+      if (_addictions.isNotEmpty && _selectedAddiction == null) {
+        _selectedAddiction = _addictions.first;
+      }
+    });
+    await _checkAuthorization();
   }
 
   Future<void> _checkAuthorization() async {
@@ -33,8 +52,9 @@ class _StatsScreenState extends State<StatsScreen> {
 
     bool alreadyAuthorized = await _healthService.authorize();
     if (alreadyAuthorized) {
-      await _fetchHealthData();
+      await _fetchData();
     } else {
+      await _fetchNonHealthData();
       setState(() {
         _isLoading = false;
         _isAuthorized = false;
@@ -42,21 +62,40 @@ class _StatsScreenState extends State<StatsScreen> {
     }
   }
 
-  Future<void> _fetchHealthData() async {
+  Future<void> _fetchNonHealthData() async {
+    if (_selectedAddiction == null) return;
+    final triggers = await DopamineLogService.loadCalendarLog(_selectedAddiction!.id);
+    final dailyEntries = await DailyLogService.loadAllEntries();
+    setState(() {
+      _triggerLog = triggers;
+      _dailyEntries = dailyEntries;
+    });
+  }
+
+  Future<void> _fetchData() async {
+    if (_selectedAddiction == null) {
+       setState(() => _isLoading = false);
+       return;
+    }
     setState(() {
       _isLoading = true;
     });
     try {
-      final hr = await _healthService.fetchDailyAverageHeartRate();
-      final stress = await _healthService.fetchDailyAverageStress();
+      final hr = await _healthService.fetchDailyAverageHeartRate(days: 7);
+      final stress = await _healthService.fetchDailyAverageStress(days: 7);
+      final triggers = await DopamineLogService.loadCalendarLog(_selectedAddiction!.id);
+      final dailyEntries = await DailyLogService.loadAllEntries();
+
       setState(() {
         _heartRateData = hr;
         _stressData = stress;
+        _triggerLog = triggers;
+        _dailyEntries = dailyEntries;
         _isAuthorized = true;
         _isLoading = false;
       });
     } catch (e) {
-      print("Error fetching health data: $e");
+      print("Error fetching data: $e");
       setState(() {
         _isLoading = false;
       });
@@ -69,8 +108,9 @@ class _StatsScreenState extends State<StatsScreen> {
     });
     bool authorized = await _healthService.authorize();
     if (authorized) {
-      await _fetchHealthData();
+      await _fetchData();
     } else {
+      await _fetchNonHealthData();
       setState(() {
         _isAuthorized = false;
         _isLoading = false;
@@ -81,6 +121,7 @@ class _StatsScreenState extends State<StatsScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -92,41 +133,100 @@ class _StatsScreenState extends State<StatsScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : !_isAuthorized
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(localizations.statsNoData),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _authorizeAndFetch,
-              child: Text(localizations.statsAuthorizeButton),
-            ),
-          ],
-        ),
-      )
           : RefreshIndicator(
-              onRefresh: _fetchHealthData,
+              onRefresh: _fetchData,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      localizations.statsHeartRateTitle,
-                      style: Theme.of(context).textTheme.titleLarge,
+                    if (_addictions.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: DropdownButton<Addiction>(
+                          value: _selectedAddiction,
+                          isExpanded: true,
+                          items: _addictions.map((a) => DropdownMenuItem(value: a, child: Text(a.name))).toList(),
+                          onChanged: (val) {
+                            setState(() => _selectedAddiction = val);
+                            _fetchData();
+                          },
+                        ),
+                      ),
+
+                    _buildSectionTitle("${_selectedAddiction?.name ?? 'Dopamine'} Triggers (7d)"),
+                    _buildChartContainer(
+                      LineChart(
+                        datasets: [
+                          LineChartData(
+                            entries: _getLast7DaysEntries((date) => (_triggerLog[date] ?? 0).toDouble()),
+                            color: colorScheme.primary,
+                          ),
+                        ],
+                        emptyLabel: localizations.logScreenChartEmpty,
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    SizedBox(height: 250, child: _buildChart(_heartRateData, Colors.red)),
-                    const SizedBox(height: 30),
-                    Text(
-                      localizations.statsStressTitle,
-                      style: Theme.of(context).textTheme.titleLarge,
+                    const SizedBox(height: 24),
+
+                    _buildSectionTitle("Mood Score (7d)"),
+                    _buildChartContainer(
+                      LineChart(
+                        datasets: [
+                          LineChartData(
+                            entries: _getLast7DaysEntries((date) => (_dailyEntries[date]?.totalScore ?? 0).toDouble()),
+                            color: Colors.red,
+                            minValue: -30,
+                            maxValue: 30,
+                          ),
+                        ],
+                        emptyLabel: localizations.logScreenChartEmpty,
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    SizedBox(height: 250, child: _buildChart(_stressData, Colors.blue)),
+                    const SizedBox(height: 24),
+
+                    if (!_isAuthorized)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: Center(
+                          child: ElevatedButton(
+                            onPressed: _authorizeAndFetch,
+                            child: Text(localizations.statsAuthorizeButton),
+                          ),
+                        ),
+                      )
+                    else ...[
+                      _buildSectionTitle(localizations.statsHeartRateTitle),
+                      _buildChartContainer(
+                        LineChart(
+                          datasets: [
+                            LineChartData(
+                              entries: _getLast7DaysEntries((date) => _heartRateData[date] ?? 0),
+                              color: Colors.orange,
+                              minValue: 80,
+                              maxValue: 130,
+                            ),
+                          ],
+                          emptyLabel: localizations.logScreenChartEmpty,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      _buildSectionTitle(localizations.statsStressTitle),
+                      _buildChartContainer(
+                        LineChart(
+                          datasets: [
+                            LineChartData(
+                              entries: _getLast7DaysEntries((date) => _stressData[date] ?? 0),
+                              color: Colors.teal,
+                              minValue: 0,
+                              maxValue: 100,
+                            ),
+                          ],
+                          emptyLabel: localizations.logScreenChartEmpty,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -134,58 +234,36 @@ class _StatsScreenState extends State<StatsScreen> {
     );
   }
 
-  Widget _buildChart(Map<DateTime, double> data, Color color) {
-    if (data.isEmpty) {
-      return const Center(child: Text("No data for the last 7 days"));
-    }
-
-    final sortedKeys = data.keys.toList()..sort();
-    final spots = sortedKeys.asMap().entries.map((e) {
-      return FlSpot(e.key.toDouble(), data[e.value]!);
-    }).toList();
-
+  Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(right: 16, top: 16),
-      child: LineChart(
-        LineChartData(
-          gridData: const FlGridData(show: false),
-          titlesData: FlTitlesData(
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (value, meta) {
-                  int index = value.toInt();
-                  if (index >= 0 && index < sortedKeys.length) {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        DateFormat('E').format(sortedKeys[index]),
-                        style: const TextStyle(fontSize: 10),
-                      ),
-                    );
-                  }
-                  return const Text('');
-                },
-              ),
-            ),
-            leftTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: true, reservedSize: 40),
-            ),
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          ),
-          borderData: FlBorderData(show: true),
-          lineBarsData: [
-            LineChartBarData(
-              spots: spots,
-              isCurved: true,
-              color: color,
-              barWidth: 3,
-              dotData: const FlDotData(show: true),
-            ),
-          ],
-        ),
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
     );
+  }
+
+  Widget _buildChartContainer(Widget chart) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SizedBox(height: 200, child: chart),
+      ),
+    );
+  }
+
+  List<LineChartEntry> _getLast7DaysEntries(double Function(DateTime) getValue) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return List.generate(7, (index) {
+      final date = today.subtract(Duration(days: 6 - index));
+      return LineChartEntry(
+        label: DateFormat('E').format(date),
+        value: getValue(date),
+      );
+    });
   }
 }

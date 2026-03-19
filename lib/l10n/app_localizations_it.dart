@@ -589,4 +589,14 @@ class AppLocalizationsIt extends AppLocalizations {
   String logDailyScore(String score) {
     return 'Punteggio Benessere Giornaliero: $score';
   }
+
+  @override
+  String logTodayHR(Object hr) {
+    return 'Battito Cardiaco: $hr BPM';
+  }
+
+  @override
+  String logTodayStress(Object stress) {
+    return 'Stress (HRV): $stress ms';
+  }
 }

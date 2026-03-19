@@ -1,24 +1,32 @@
 import 'package:flutter/material.dart';
 
-class LineChart extends StatelessWidget {
+class LineChartData {
   final List<LineChartEntry> entries;
+  final Color color;
+  final double? minValue;
+  final double? maxValue;
+
+  LineChartData({
+    required this.entries,
+    required this.color,
+    this.minValue,
+    this.maxValue,
+  });
+}
+
+class LineChart extends StatelessWidget {
+  final List<LineChartData> datasets;
   final String emptyLabel;
-  final Color lineColor;
 
   const LineChart({
     super.key,
-    required this.entries,
+    required this.datasets,
     required this.emptyLabel,
-    this.lineColor = Colors.indigo,
   });
 
   @override
   Widget build(BuildContext context) {
-    final maxValue = entries.isEmpty
-        ? 0
-        : entries.map((e) => e.value).reduce((a, b) => a > b ? a : b);
-
-    if (maxValue == 0) {
+    if (datasets.isEmpty || datasets.every((d) => d.entries.isEmpty)) {
       return Center(
         child: Text(
           emptyLabel,
@@ -31,21 +39,26 @@ class LineChart extends StatelessWidget {
       builder: (context, constraints) {
         final height = constraints.maxHeight;
         final width = constraints.maxWidth;
+        
+        final referenceDataset = datasets.firstWhere(
+          (d) => d.entries.isNotEmpty,
+          orElse: () => datasets.first,
+        );
+        final referenceEntries = referenceDataset.entries;
+
         return Column(
           children: [
             Expanded(
               child: CustomPaint(
                 size: Size(width, height - 32),
-                painter: _LineChartPainter(
-                  entries: entries,
-                  maxValue: maxValue,
-                  color: lineColor,
+                painter: _MultiLineChartPainter(
+                  datasets: datasets,
                 ),
               ),
             ),
             SizedBox(
               height: 24,
-              child: _buildLabelsRow(entries, width),
+              child: _buildLabelsRow(referenceEntries, width),
             ),
           ],
         );
@@ -53,13 +66,10 @@ class LineChart extends StatelessWidget {
     );
   }
 
-  /// Builds the X-axis labels, positioning only non-empty labels
-  /// at the exact X coordinate that matches the chart data point.
   Widget _buildLabelsRow(List<LineChartEntry> entries, double totalWidth) {
     final count = entries.length;
     if (count == 0) return const SizedBox.shrink();
 
-    // Collect indices that have a visible label
     final labelledIndices = <int>[];
     for (int i = 0; i < count; i++) {
       if (entries[i].label.isNotEmpty) {
@@ -67,7 +77,6 @@ class LineChart extends StatelessWidget {
       }
     }
 
-    // If every entry has a label (e.g. 7-day / 14-day view), use simple Expanded row
     if (labelledIndices.length == count) {
       return Row(
         children: entries
@@ -86,8 +95,6 @@ class LineChart extends StatelessWidget {
       );
     }
 
-    // For sparse labels (e.g. month view), position each label at the
-    // exact X coordinate of its data point using a Stack.
     return LayoutBuilder(
       builder: (context, constraints) {
         final w = constraints.maxWidth;
@@ -98,7 +105,7 @@ class LineChart extends StatelessWidget {
           children: labelledIndices.map((i) {
             final x = count == 1 ? w / 2 : dx * i;
             return Positioned(
-              left: x - 20, // center a 40dp-wide label on the point
+              left: x - 20,
               top: 0,
               child: SizedBox(
                 width: 40,
@@ -120,58 +127,79 @@ class LineChart extends StatelessWidget {
 
 class LineChartEntry {
   final String label;
-  final int value;
+  final double value;
 
   LineChartEntry({required this.label, required this.value});
 }
 
-class _LineChartPainter extends CustomPainter {
-  final List<LineChartEntry> entries;
-  final int maxValue;
-  final Color color;
+class _MultiLineChartPainter extends CustomPainter {
+  final List<LineChartData> datasets;
 
-  _LineChartPainter({
-    required this.entries,
-    required this.maxValue,
-    required this.color,
+  _MultiLineChartPainter({
+    required this.datasets,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (entries.isEmpty) return;
+    for (var dataset in datasets) {
+      if (dataset.entries.isEmpty) continue;
 
-    final linePaint = Paint()
-      ..color = color
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke
-      ..strokeJoin = StrokeJoin.round
-      ..strokeCap = StrokeCap.round;
+      double min = dataset.minValue ?? 0;
+      double max = dataset.maxValue ?? 1;
 
-    final path = Path();
-    final count = entries.length;
-    final dx = count == 1 ? size.width : size.width / (count - 1);
-
-    for (int i = 0; i < count; i++) {
-      final entry = entries[i];
-      final x = count == 1 ? size.width / 2 : dx * i;
-      final y = size.height -
-          ((entry.value / maxValue) * size.height)
-              .clamp(0.0, size.height); // invert axis
-
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
+      // If limits are not provided, calculate them from data
+      if (dataset.minValue == null || dataset.maxValue == null) {
+        double dataMin = dataset.entries.first.value;
+        double dataMax = dataset.entries.first.value;
+        for (var e in dataset.entries) {
+          if (e.value < dataMin) dataMin = e.value;
+          if (e.value > dataMax) dataMax = e.value;
+        }
+        
+        if (dataset.minValue == null) min = dataMin;
+        if (dataset.maxValue == null) max = dataMax;
       }
-    }
 
-    canvas.drawPath(path, linePaint);
+      // Handle cases where min == max to avoid division by zero
+      if (min == max) {
+        if (min > 0) min = 0;
+        else if (min < 0) max = 0;
+        else max = 1;
+      }
+
+      final range = max - min;
+
+      final linePaint = Paint()
+        ..color = dataset.color
+        ..strokeWidth = 3
+        ..style = PaintingStyle.stroke
+        ..strokeJoin = StrokeJoin.round
+        ..strokeCap = StrokeCap.round;
+
+      final path = Path();
+      final count = dataset.entries.length;
+      final dx = count == 1 ? size.width : size.width / (count - 1);
+
+      for (int i = 0; i < count; i++) {
+        final entry = dataset.entries[i];
+        final x = count == 1 ? size.width / 2 : dx * i;
+        
+        final normalized = (entry.value - min) / range;
+        final y = size.height - (normalized * size.height).clamp(0.0, size.height);
+
+        if (i == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
+      }
+
+      canvas.drawPath(path, linePaint);
+    }
   }
 
   @override
-  bool shouldRepaint(covariant _LineChartPainter oldDelegate) {
-    return oldDelegate.entries != entries ||
-        oldDelegate.maxValue != maxValue ||
-        oldDelegate.color != color;
+  bool shouldRepaint(covariant _MultiLineChartPainter oldDelegate) {
+    return oldDelegate.datasets != datasets;
   }
 }

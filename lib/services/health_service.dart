@@ -1,7 +1,11 @@
 import 'package:health/health.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HealthService {
   final Health _health = Health();
+
+  static const String _keyTodayHeartRate = 'today_avg_heart_rate';
+  static const String _keyTodayStress = 'today_avg_stress';
 
   Future<bool> authorize() async {
     final types = [
@@ -29,9 +33,9 @@ class HealthService {
     return hasPermissions ?? false;
   }
 
-  Future<Map<DateTime, double>> fetchDailyAverageHeartRate() async {
+  Future<Map<DateTime, double>> fetchDailyAverageHeartRate({int days = 7}) async {
     final now = DateTime.now();
-    final start = now.subtract(const Duration(days: 7));
+    final start = now.subtract(Duration(days: days));
 
     List<HealthDataPoint> data = await _health.getHealthDataFromTypes(
       types: [HealthDataType.HEART_RATE],
@@ -42,13 +46,13 @@ class HealthService {
     return _calculateDailyAverages(data);
   }
 
-  Future<Map<DateTime, double>> fetchDailyAverageStress() async {
+  Future<Map<DateTime, double>> fetchDailyAverageStress({int days = 7}) async {
     final now = DateTime.now();
-    final start = now.subtract(const Duration(days: 7));
+    final start = now.subtract(Duration(days: days));
 
-    // Using HRV as a proxy for stress if direct stress is not available
+    // Using HRV (RMSSD) as a proxy for stress
     List<HealthDataPoint> data = await _health.getHealthDataFromTypes(
-      types: [HealthDataType.RESTING_HEART_RATE],
+      types: [HealthDataType.HEART_RATE_VARIABILITY_RMSSD],
       startTime: start,
       endTime: now,
     );
@@ -82,5 +86,76 @@ class HealthService {
     });
 
     return averages;
+  }
+
+  Future<double?> updateAndSaveTodayHeartRate() async {
+    final now = DateTime.now();
+    final startOfToday = DateTime(now.year, now.month, now.day);
+
+    List<HealthDataPoint> data = await _health.getHealthDataFromTypes(
+      types: [HealthDataType.RESTING_HEART_RATE],
+      startTime: startOfToday,
+      endTime: now,
+    );
+
+    if (data.isEmpty) return null;
+
+    double sum = 0;
+    int count = 0;
+
+    for (var point in data) {
+      final pointValue = point.value;
+      if (pointValue is NumericHealthValue) {
+        sum += pointValue.numericValue.toDouble();
+        count++;
+      }
+    }
+
+    if (count == 0) return null;
+    double average = sum / count;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_keyTodayHeartRate, average);
+
+    return average;
+  }
+
+  Future<double?> getSavedTodayHeartRate() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getDouble(_keyTodayHeartRate);
+  }
+
+  Future<double?> updateAndSaveTodayStress() async {
+    final now = DateTime.now();
+    final startOfToday = DateTime(now.year, now.month, now.day);
+
+    List<HealthDataPoint> data = await _health.getHealthDataFromTypes(
+      types: [HealthDataType.HEART_RATE_VARIABILITY_RMSSD],
+      startTime: startOfToday,
+      endTime: now,
+    );
+
+    if (data.isEmpty) return null;
+
+    double sum = 0;
+    int count = 0;
+    for (var point in data) {
+      final v = point.value;
+      if (v is NumericHealthValue) {
+        sum += v.numericValue.toDouble();
+        count++;
+      }
+    }
+
+    if (count == 0) return null;
+    double average = sum / count;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_keyTodayStress, average);
+    return average;
+  }
+
+  Future<double?> getSavedTodayStress() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getDouble(_keyTodayStress);
   }
 }

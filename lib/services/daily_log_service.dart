@@ -144,4 +144,23 @@ class DailyLogService {
     if (stored == null) return null;
     return DailyLogEntry.fromJson(jsonDecode(stored));
   }
+
+  static Future<Map<DateTime, DailyLogEntry>> loadAllEntries() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys().where((k) => k.startsWith(_logKeyPrefix));
+    final Map<DateTime, DailyLogEntry> result = {};
+    for (final key in keys) {
+      final dateStr = key.substring(_logKeyPrefix.length);
+      try {
+        final date = DateFormat('yyyy-MM-dd').parse(dateStr);
+        final stored = prefs.getString(key);
+        if (stored != null) {
+          result[date] = DailyLogEntry.fromJson(jsonDecode(stored));
+        }
+      } catch (e) {
+        // Ignora chiavi non valide
+      }
+    }
+    return result;
+  }
 }

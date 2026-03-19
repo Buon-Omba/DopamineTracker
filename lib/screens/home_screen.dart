@@ -21,6 +21,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+  List<Addiction> addictions = [];
+  Addiction? selectedAddiction;
+  
   DateTime? lastTrigger;
   bool isFirstTime = true;
   bool _friendsEnabled = true;
@@ -73,24 +76,35 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     await prefs.reload();
     if (!mounted) return;
 
+    await _loadAddictions();
     await _loadConfigData();
-    await _loadLastTrigger();
-    await _loadTodayTriggerCount();
+    await _loadSelectedAddictionData();
     _updateCalculations();
   }
 
-  Future<void> _loadLastTrigger() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? storedTime = prefs.getString('lastTrigger');
-    bool hasStarted = prefs.getBool('hasStarted') ?? false;
-
+  Future<void> _loadAddictions() async {
+    final list = await DopamineLogService.getAddictions();
     if (!mounted) return;
-    if (storedTime != null && hasStarted) {
-      setState(() {
-        lastTrigger = DateTime.parse(storedTime);
-        isFirstTime = false;
-      });
-    }
+    setState(() {
+      addictions = list;
+      if (selectedAddiction == null && addictions.isNotEmpty) {
+        selectedAddiction = addictions.first;
+      }
+    });
+  }
+
+  Future<void> _loadSelectedAddictionData() async {
+    if (selectedAddiction == null) return;
+    
+    final last = await DopamineLogService.getLastTrigger(selectedAddiction!.id);
+    final count = await DopamineLogService.countForDate(selectedAddiction!.id, DateTime.now());
+    
+    if (!mounted) return;
+    setState(() {
+      lastTrigger = last;
+      triggersLoggedToday = count;
+      isFirstTime = last == null;
+    });
   }
 
   Future<void> _loadConfigData() async {
@@ -100,14 +114,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       weeklyOccurrences = prefs.getInt('packetsPerWeek') ?? 0;
       dailyIntensity = prefs.getInt('cigarettesPerPacket') ?? 0;
       _friendsEnabled = prefs.getBool('friendsEnabled') ?? true;
-    });
-  }
-
-  Future<void> _loadTodayTriggerCount() async {
-    final count = await DopamineLogService.countForDate(DateTime.now());
-    if (!mounted) return;
-    setState(() {
-      triggersLoggedToday = count;
     });
   }
 
@@ -132,32 +138,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     } else {
       if (!mounted) return;
       setState(() {
+        benefitScore = 0.0;
+        triggersAvoided = 0;
         hoursWithoutTriggers = 0;
       });
     }
   }
 
-  void _startCounter() {
-    setState(() {
-      lastTrigger = DateTime.now();
-      isFirstTime = false;
-    });
-    _saveLastTrigger();
-    _updateCalculations();
-  }
-
   Future<void> _logTrigger() async {
-    final now = DateTime.now();
-    if (!mounted) return;
-    setState(() {
-      lastTrigger = now;
-      isFirstTime = false;
-    });
-
-    await DopamineLogService.logTrigger(timestamp: now);
-    await _loadTodayTriggerCount();
-    await _updateCalculations();
+    if (selectedAddiction == null) return;
     
+    final now = DateTime.now();
+    await DopamineLogService.logTrigger(selectedAddiction!.id, timestamp: now);
+    
+    if (!mounted) return;
+    await _loadSelectedAddictionData();
+    await _updateCalculations();
     await WidgetProvider.updateWidgets();
 
     if (!mounted) return;
@@ -168,11 +164,58 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
-  Future<void> _saveLastTrigger() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('lastTrigger', lastTrigger!.toIso8601String());
-    await prefs.setBool('hasStarted', true);
-    await WidgetProvider.updateWidgets();
+  void _showAddAddictionDialog() {
+    final controller = TextEditingController();
+    String? errorText;
+
+    String formatName(String input) {
+      if (input.isEmpty) return "";
+      return input[0].toUpperCase() + input.substring(1).toLowerCase();
+    }
+
+    bool isOnlyText(String input) {
+      return RegExp(r'^[a-zA-ZÀ-ÿ\s]+$').hasMatch(input);
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text("Aggiungi dipendenza"),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: "Esempio: Social Media, Zucchero...",
+              errorText: errorText,
+            ),
+            autofocus: true,
+            onChanged: (_) => setDialogState(() => errorText = null),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Annulla")),
+            TextButton(
+              onPressed: () async {
+                final input = controller.text.trim();
+                if (input.isEmpty) {
+                  setDialogState(() => errorText = "Inserisci un nome");
+                  return;
+                }
+                if (!isOnlyText(input)) {
+                  setDialogState(() => errorText = "Inserisci solo lettere");
+                  return;
+                }
+                
+                final formattedName = formatName(input);
+                await DopamineLogService.addAddiction(formattedName);
+                await _loadAddictions();
+                if (mounted) Navigator.pop(context);
+              },
+              child: const Text("Aggiungi"),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -190,8 +233,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(''),
+        title: addictions.isEmpty 
+          ? const Text('')
+          : DropdownButton<Addiction>(
+              value: selectedAddiction,
+              underline: const SizedBox(),
+              icon: const Icon(Icons.keyboard_arrow_down),
+              items: addictions.map((a) => DropdownMenuItem(
+                value: a,
+                child: Text(a.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+              )).toList(),
+              onChanged: (val) {
+                setState(() {
+                  selectedAddiction = val;
+                });
+                _loadSelectedAddictionData();
+              },
+            ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _showAddAddictionDialog,
+            tooltip: "Aggiungi dipendenza",
+          ),
           PopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'config') {
@@ -230,7 +294,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             ),
             const SizedBox(height: 4),
             Text(
-              AppLocalizations.of(context)!.homeTagline,
+              selectedAddiction != null 
+                ? "Stai tracciando: ${selectedAddiction!.name}"
+                : AppLocalizations.of(context)!.homeTagline,
               style: TextStyle(
                 fontSize: 16,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,

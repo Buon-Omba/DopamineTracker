@@ -1165,6 +1165,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Daily Wellness Score: {score}'**
   String logDailyScore(String score);
+
+  /// No description provided for @logTodayHR.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart Rate: {hr} BPM'**
+  String logTodayHR(Object hr);
+
+  /// No description provided for @logTodayStress.
+  ///
+  /// In en, this message translates to:
+  /// **'Stress (HRV): {stress} ms'**
+  String logTodayStress(Object stress);
 }
 
 class _AppLocalizationsDelegate
