@@ -84,12 +84,13 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
     final localeString = Localizations.localeOf(context).toString();
     final formattedDate = DateFormat.yMMMMd(localeString).format(_selectedDay);
     final chartEntries = _buildRangeData(localeString);
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final addictionName = _selectedAddiction?.name ?? 'Dopamine';
 
     return Scaffold(
       appBar: AppBar(
         title: _addictions.isEmpty 
-          ? Text(l10n?.logScreenTitle ?? 'Log')
+          ? Text(l10n.logScreenTitle(addictionName))
           : DropdownButton<Addiction>(
               value: _selectedAddiction,
               underline: const SizedBox(),
@@ -205,19 +206,19 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
                           segments: [
                             ButtonSegment(
                               value: ChartRange.week,
-                              label: Text(l10n?.logScreenRange7d ?? '7d'),
+                              label: Text(l10n.logScreenRange7d),
                             ),
                             ButtonSegment(
                               value: ChartRange.twoWeeks,
-                              label: Text(l10n?.logScreenRange14d ?? '14d'),
+                              label: Text(l10n.logScreenRange14d),
                             ),
                             ButtonSegment(
                               value: ChartRange.month,
-                              label: Text(l10n?.logScreenRange30d ?? '1m'),
+                              label: Text(l10n.logScreenRange30d),
                             ),
                             ButtonSegment(
                               value: ChartRange.year,
-                              label: Text(l10n?.logScreenRange365d ?? '1y'),
+                              label: Text(l10n.logScreenRange365d),
                             ),
                           ],
                           selected: {_selectedRange},
@@ -242,7 +243,7 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
                             color: Colors.indigo.shade400,
                           ),
                         ],
-                        emptyLabel: l10n?.logScreenChartEmpty ?? 'Empty',
+                        emptyLabel: l10n.logScreenChartEmpty,
                       ),
                     ),
                   ],
@@ -251,16 +252,17 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              l10n?.logScreenSelectedDayText(
+              l10n.logScreenSelectedDayText(
                 selectedCount.toString(),
                 formattedDate,
-              ) ?? '$selectedCount triggers on $formattedDate',
+                addictionName,
+              ),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             if (_log.isEmpty)
               Text(
-                l10n?.logScreenEmptyHint ?? 'No entries',
+                l10n.logScreenEmptyHint(addictionName),
                 style: const TextStyle(fontSize: 14, color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
@@ -335,37 +337,39 @@ class _SmokingLogScreenState extends State<SmokingLogScreen> {
     if (_selectedAddiction == null) return;
     final initial = _countForDay(day);
     final controller = TextEditingController(text: initial.toString());
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final addictionName = _selectedAddiction!.name;
 
     final result = await showDialog<_EditResult>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n?.logEditTitle ?? 'Edit'),
+        title: Text(l10n.logEditTitle),
         content: TextField(
           keyboardType: TextInputType.number,
           controller: controller,
           decoration: InputDecoration(
-            labelText: l10n?.logEditCountLabel(
+            labelText: l10n.logEditCountLabel(
                 DateFormat.yMMMd(Localizations.localeOf(context).toString())
-                    .format(day)) ?? 'Triggers',
+                    .format(day),
+                addictionName),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(l10n?.cancel ?? 'Cancel'),
+            child: Text(l10n.cancel),
           ),
           if (initial > 0)
             TextButton(
               onPressed: () => Navigator.pop(context, _EditResult.delete),
               child: Text(
-                l10n?.delete ?? 'Delete',
+                l10n.delete,
                 style: const TextStyle(color: Colors.red),
               ),
             ),
           TextButton(
             onPressed: () => Navigator.pop(context, _EditResult.save),
-            child: Text(l10n?.save ?? 'Save'),
+            child: Text(l10n.save),
           ),
         ],
       ),

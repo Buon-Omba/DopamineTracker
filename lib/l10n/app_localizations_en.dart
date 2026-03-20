@@ -30,21 +30,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get save => 'Save';
 
   @override
-  String get aboutScreenTitle => 'About Dopamine Tracker';
+  String aboutScreenTitle(String trigger) {
+    return 'About $trigger Tracker';
+  }
 
   @override
-  String get aboutDescriptionTitle => 'Dopamine Tracker';
+  String aboutDescriptionTitle(String trigger) {
+    return '$trigger Tracker';
+  }
 
   @override
-  String get aboutDescriptionText =>
-      'Dopamine Tracker is an open-source app designed to help you track the time since your last dopamine trigger and see the progress you\'ve made. It calculates the dopamine triggers avoided and the potential health benefits based on your habits. Is a fork of https://codeberg.org/retiolus/ExHale who add a calendar feature.';
+  String aboutDescriptionText(String trigger) {
+    return '$trigger Tracker is an open-source app designed to help you track the time since your last $trigger and see the progress you\'ve made. It calculates the ${trigger}s avoided and the potential health benefits based on your habits. Is a fork of https://codeberg.org/retiolus/ExHale who add a calendar feature.';
+  }
 
   @override
   String get aboutPrivacyTitle => 'Privacy and Open Source';
 
   @override
-  String get aboutPrivacyText =>
-      'Dopamine Tracker respects your privacy. It does not track your data, and all your information is stored locally on your device. The source code is available for review, ensuring complete transparency.';
+  String aboutPrivacyText(String trigger) {
+    return '$trigger Tracker respects your privacy. It does not track your data, and all your information is stored locally on your device. The source code is available for review, ensuring complete transparency.';
+  }
 
   @override
   String get aboutLinksTitle => 'Links';
@@ -94,11 +100,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get configOptionEnableFriendsText => 'Enable Friends';
 
   @override
-  String get configOptionPacketsPerWeekText => 'Average dopamine trigger used';
+  String configOptionPacketsPerWeekText(String trigger) {
+    return 'Average $trigger used';
+  }
 
   @override
-  String get configOptionCigarettesPerPacketText =>
-      'Average daily dopamine trigger used';
+  String configOptionCigarettesPerPacketText(String trigger) {
+    return 'Average daily $trigger used';
+  }
 
   @override
   String get configOptionCounterStartDateText => 'Counter Start Date';
@@ -148,11 +157,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'Data imported successfully. Restart the app if needed.';
 
   @override
-  String get configImportErrorMessage =>
-      'Invalid or corrupted file. Use a valid Dopamine Tracker backup JSON.';
+  String configImportErrorMessage(String trigger) {
+    return 'Invalid or corrupted file. Use a valid $trigger Tracker backup JSON.';
+  }
 
   @override
   String get configImportCancelled => 'Import cancelled.';
+
+  @override
+  String get configDeleteAddictionTitle => 'Delete addiction';
+
+  @override
+  String configDeleteAddictionButton(String trigger) {
+    return 'Delete all data for $trigger';
+  }
+
+  @override
+  String configDeleteAddictionConfirmation(String trigger) {
+    return 'Are you sure you want to delete all data for $trigger? This action cannot be undone.';
+  }
+
+  @override
+  String get configDeleteAddictionSuccess => 'Addiction deleted successfully';
 
   @override
   String get friendsDialogUIDYourQRText => 'Your QR Code';
@@ -192,13 +218,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'No friends yet, Add some to see their progress!';
 
   @override
-  String friendsLastSmokedText(String lastSmoked) {
-    return 'Last Trigger: $lastSmoked';
+  String friendsLastSmokedText(String lastSmoked, String trigger) {
+    return 'Last $trigger: $lastSmoked';
   }
 
   @override
-  String friendsCigarettesAvoidedText(String cigAvoided) {
-    return 'Triggers avoided: $cigAvoided';
+  String friendsCigarettesAvoidedText(String cigAvoided, String trigger) {
+    return '${trigger}s avoided: $cigAvoided';
   }
 
   @override
@@ -224,69 +250,87 @@ class AppLocalizationsEn extends AppLocalizations {
   String get friendsDialogEditFriendsNameTitle => 'Edit Friend\'s Name';
 
   @override
-  String get health2DaysTitle => '2 days without using your dopamine triggers';
+  String health2DaysTitle(String trigger) {
+    return '2 days without using your ${trigger}s';
+  }
 
   @override
-  String get health2DaysText => 'Dopamine receptors begin to re-sensitize.';
+  String health2DaysText(String trigger) {
+    return '$trigger receptors begin to re-sensitize.';
+  }
 
   @override
-  String get health3DaysTitle => '3 days without using your dopamine triggers';
+  String health3DaysTitle(String trigger) {
+    return '3 days without using your ${trigger}s';
+  }
 
   @override
   String get health3DaysText =>
       'Mental clarity begins to improve and focus increases.';
 
   @override
-  String get health7DaysTitle => '7 days without using your dopamine triggers';
+  String health7DaysTitle(String trigger) {
+    return '7 days without using your ${trigger}s';
+  }
 
   @override
   String get health7DaysText => 'Mood stability gradually returns.';
 
   @override
-  String get health2WeeksTitle =>
-      '2 weeks without using your dopamine triggers';
+  String health2WeeksTitle(String trigger) {
+    return '2 weeks without using your ${trigger}s';
+  }
 
   @override
   String get health2WeeksText => 'Sleep quality improves.';
 
   @override
-  String get health1MonthTitle =>
-      '1 month without using your dopamine triggers';
+  String health1MonthTitle(String trigger) {
+    return '1 month without using your ${trigger}s';
+  }
 
   @override
   String get health1MonthText => 'Willpower becomes stronger.';
 
   @override
-  String get health2MonthsTitle =>
-      '2.5 months without using your dopamine triggers';
+  String health2MonthsTitle(String trigger) {
+    return '2.5 months without using your ${trigger}s';
+  }
 
   @override
   String get health2MonthsText => 'Natural joy in simple activities returns.';
 
   @override
-  String get health3MonthsTitle =>
-      '3 months without using your dopamine triggers';
+  String health3MonthsTitle(String trigger) {
+    return '3 months without using your ${trigger}s';
+  }
 
   @override
-  String get health3MonthsText =>
-      'Dopamine levels are mostly restored to baseline.';
+  String health3MonthsText(String trigger) {
+    return '$trigger levels are mostly restored to baseline.';
+  }
 
   @override
-  String get health1YearTitle => '1 year without using your dopamine triggers';
+  String health1YearTitle(String trigger) {
+    return '1 year without using your ${trigger}s';
+  }
 
   @override
   String get health1YearText => 'Brain pathways have significantly rewired.';
 
   @override
-  String get health5YearsTitle =>
-      '5 years without using your dopamine triggers';
+  String health5YearsTitle(String trigger) {
+    return '5 years without using your ${trigger}s';
+  }
 
   @override
   String get health5YearsText =>
       'Sustained long-term cognitive health benefits.';
 
   @override
-  String get health15YearsTitle => '10-15 without using your dopamine triggers';
+  String health15YearsTitle(String trigger) {
+    return '10-15 without using your ${trigger}s';
+  }
 
   @override
   String get health15YearsText => 'Maximum mental resilience achieved.';
@@ -302,8 +346,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Friends screen is disabled in settings.';
 
   @override
-  String homeCigarettesAvoidedText(String cigarettesAvoided) {
-    return 'Triggers avoided: \n $cigarettesAvoided';
+  String homeCigarettesAvoidedText(String cigarettesAvoided, String trigger) {
+    return '${trigger}s avoided: \n $cigarettesAvoided';
   }
 
   @override
@@ -318,7 +362,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTagline => 'Track, log, and stay accountable.';
 
   @override
-  String get homeSinceLastTitle => 'Time since last used trigger';
+  String homeSinceLastTitle(String trigger) {
+    return 'Time since last used $trigger';
+  }
 
   @override
   String homeLastSmokedLabel(String date) {
@@ -332,51 +378,63 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeQuickActionsTitle => 'Quick actions';
 
   @override
-  String homeSmokedTodayText(String cigarettesSmoked) {
-    return 'Dopamine Triggers used today: \n $cigarettesSmoked';
+  String homeSmokedTodayText(String cigarettesSmoked, Object trigger) {
+    return '${trigger}s used today: \n $cigarettesSmoked';
   }
 
   @override
-  String homeHoursWithoutSmokingText(String hours) {
-    return 'Hours without using dopamine trigger: \n $hours';
+  String homeHoursWithoutSmokingText(String hours, String trigger) {
+    return 'Hours without using $trigger: \n $hours';
   }
 
   @override
-  String get homeLogCigaretteButton => 'Log a dopamine trigger';
+  String homeLogCigaretteButton(String trigger) {
+    return 'Log a $trigger';
+  }
 
   @override
   String get homeViewCalendarLogButton => 'View calendar log';
 
   @override
-  String get homeSnackBarCigaretteLogged =>
-      'Dopamine Trigger logged for today.';
+  String homeSnackBarCigaretteLogged(String trigger) {
+    return '$trigger logged for today.';
+  }
 
   @override
-  String get logScreenTitle => 'Dopamine log';
+  String logScreenTitle(String trigger) {
+    return '$trigger log';
+  }
 
   @override
   String get logScreenToday => 'Today';
 
   @override
-  String get logScreenCigaretteSingular => 'trigger';
+  String logScreenCigaretteSingular(String trigger) {
+    return '$trigger';
+  }
 
   @override
-  String get logScreenCigarettePlural => 'triggers';
+  String logScreenCigarettePlural(String trigger) {
+    return '${trigger}s';
+  }
 
   @override
   String get logScreenSelectedDayHeader => 'Selected Day';
 
   @override
-  String logScreenSelectedDayText(String count, String date) {
-    return '$count triggers on $date';
+  String logScreenSelectedDayText(String count, String date, String trigger) {
+    return '$count ${trigger}s on $date';
   }
 
   @override
-  String get logScreenEmptyHint =>
-      'No entries yet. Log each dopamine trigger to build your calendar.';
+  String logScreenEmptyHint(String trigger) {
+    return 'No entries yet. Log each $trigger to build your calendar.';
+  }
 
   @override
-  String get logScreenChartTitle => 'Dopamine riggers logged';
+  String logScreenChartTitle(String trigger) {
+    return '${trigger}s logged';
+  }
 
   @override
   String get logScreenRange7d => '7 days';
@@ -400,8 +458,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logEditTitle => 'Edit entry';
 
   @override
-  String logEditCountLabel(String date) {
-    return 'Dopamine Triggers on $date';
+  String logEditCountLabel(String date, String trigger) {
+    return '${trigger}s on $date';
   }
 
   @override
@@ -418,8 +476,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navigationBarCalendar => 'Calendar';
 
   @override
-  String get healthScreenNoCigarettesYetTitle =>
-      'Goals - Log your first dopamine trigger';
+  String healthScreenNoCigarettesYetTitle(String trigger) {
+    return 'Goals - Log your first $trigger';
+  }
 
   @override
   String get statsScreenTitle => 'Health Stats';

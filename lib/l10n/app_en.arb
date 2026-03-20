@@ -14,16 +14,40 @@
   "save": "Save",
   "@save": {},
 
-  "aboutScreenTitle": "About Dopamine Tracker",
-  "@aboutScreenTitle": {},
-  "aboutDescriptionTitle": "Dopamine Tracker",
-  "@aboutDescriptionTitle": {},
-  "aboutDescriptionText": "Dopamine Tracker is an open-source app designed to help you track the time since your last dopamine trigger and see the progress you've made. It calculates the dopamine triggers avoided and the potential health benefits based on your habits. Is a fork of https://codeberg.org/retiolus/ExHale who add a calendar feature.",
-  "@aboutDescriptionText": {},
+  "aboutScreenTitle": "About {trigger} Tracker",
+  "@aboutScreenTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutDescriptionTitle": "{trigger} Tracker",
+  "@aboutDescriptionTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutDescriptionText": "{trigger} Tracker is an open-source app designed to help you track the time since your last {trigger} and see the progress you've made. It calculates the {trigger}s avoided and the potential health benefits based on your habits. Is a fork of https://codeberg.org/retiolus/ExHale who add a calendar feature.",
+  "@aboutDescriptionText": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "aboutPrivacyTitle": "Privacy and Open Source",
   "@aboutPrivacyTitle": {},
-  "aboutPrivacyText": "Dopamine Tracker respects your privacy. It does not track your data, and all your information is stored locally on your device. The source code is available for review, ensuring complete transparency.",
-  "@aboutPrivacyText": {},
+  "aboutPrivacyText": "{trigger} Tracker respects your privacy. It does not track your data, and all your information is stored locally on your device. The source code is available for review, ensuring complete transparency.",
+  "@aboutPrivacyText": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "aboutLinksTitle": "Links",
   "@aboutLinksTitle": {},
   "aboutLinksViewSourceCode": "View Source Code",
@@ -53,10 +77,22 @@
   "@configScreenTitle": {},
   "configOptionEnableFriendsText": "Enable Friends",
   "@configOptionEnableFriendsText": {},
-  "configOptionPacketsPerWeekText": "Average dopamine trigger used",
-  "@configOptionPacketsPerWeekText": {},
-  "configOptionCigarettesPerPacketText": "Average daily dopamine trigger used",
-  "@configOptionCigarettesPerPacketText": {},
+  "configOptionPacketsPerWeekText": "Average {trigger} used",
+  "@configOptionPacketsPerWeekText": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "configOptionCigarettesPerPacketText": "Average daily {trigger} used",
+  "@configOptionCigarettesPerPacketText": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "configOptionCounterStartDateText": "Counter Start Date",
   "@configOptionCounterStartDateText": {},
   "configOptionCounterStartDateSelectText": "Select a date",
@@ -83,10 +119,36 @@
   "@configExportErrorMessage": {},
   "configImportSuccessMessage": "Data imported successfully. Restart the app if needed.",
   "@configImportSuccessMessage": {},
-  "configImportErrorMessage": "Invalid or corrupted file. Use a valid Dopamine Tracker backup JSON.",
-  "@configImportErrorMessage": {},
+  "configImportErrorMessage": "Invalid or corrupted file. Use a valid {trigger} Tracker backup JSON.",
+  "@configImportErrorMessage": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "configImportCancelled": "Import cancelled.",
   "@configImportCancelled": {},
+  "configDeleteAddictionTitle": "Delete addiction",
+  "@configDeleteAddictionTitle": {},
+  "configDeleteAddictionButton": "Delete all data for {trigger}",
+  "@configDeleteAddictionButton": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "configDeleteAddictionConfirmation": "Are you sure you want to delete all data for {trigger}? This action cannot be undone.",
+  "@configDeleteAddictionConfirmation": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "configDeleteAddictionSuccess": "Addiction deleted successfully",
+  "@configDeleteAddictionSuccess": {},
 
   "friendsDialogUIDYourQRText": "Your QR Code",
   "@friendsDialogUIDYourQRText": {},
@@ -112,28 +174,34 @@
   "@friendsScreenTitle": {},
   "friendsNoFriendsText": "No friends yet, Add some to see their progress!",
   "@friendsNoFriendsText": {},
-  "friendsLastSmokedText": "Last Trigger: {lastSmoked}",
+  "friendsLastSmokedText": "Last {trigger}: {lastSmoked}",
   "@friendsLastSmokedText": {
     "placeholders": {
-      "lastSmoked":{
+      "lastSmoked": {
         "type": "String",
         "example": "N/A"
+      },
+      "trigger": {
+        "type": "String"
       }
     }
   },
-  "friendsCigarettesAvoidedText": "Triggers avoided: {cigAvoided}",
+  "friendsCigarettesAvoidedText": "{trigger}s avoided: {cigAvoided}",
   "@friendsCigarettesAvoidedText": {
     "placeholders": {
-      "cigAvoided":{
+      "cigAvoided": {
         "type": "String",
         "example": "0"
+      },
+      "trigger": {
+        "type": "String"
       }
     }
   },
   "friendsMoneySavedText": "Money Saved: €{moneySaved}",
   "@friendsMoneySavedText": {
     "placeholders": {
-      "moneySaved":{
+      "moneySaved": {
         "type": "String",
         "example": "0.0"
       }
@@ -142,7 +210,7 @@
   "friendsLastAnnouncedText": "Last Announced: {lastAnnounced}",
   "@friendsLastAnnouncedText": {
     "placeholders": {
-      "lastAnnounced":{
+      "lastAnnounced": {
         "type": "String",
         "example": "N/A"
       }
@@ -157,34 +225,118 @@
   "friendsDialogEditFriendsNameTitle": "Edit Friend's Name",
   "@friendsDialogEditFriendsNameTitle": {},
 
-  "health2DaysTitle": "2 days without using your dopamine triggers",
-  "health2DaysText": "Dopamine receptors begin to re-sensitize.",
+  "health2DaysTitle": "2 days without using your {trigger}s",
+  "@health2DaysTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "health2DaysText": "{trigger} receptors begin to re-sensitize.",
+  "@health2DaysText": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
 
-  "health3DaysTitle": "3 days without using your dopamine triggers",
+  "health3DaysTitle": "3 days without using your {trigger}s",
+  "@health3DaysTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health3DaysText": "Mental clarity begins to improve and focus increases.",
 
-  "health7DaysTitle": "7 days without using your dopamine triggers",
+  "health7DaysTitle": "7 days without using your {trigger}s",
+  "@health7DaysTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health7DaysText": "Mood stability gradually returns.",
 
-  "health2WeeksTitle": "2 weeks without using your dopamine triggers",
+  "health2WeeksTitle": "2 weeks without using your {trigger}s",
+  "@health2WeeksTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health2WeeksText": "Sleep quality improves.",
 
-  "health1MonthTitle": "1 month without using your dopamine triggers",
+  "health1MonthTitle": "1 month without using your {trigger}s",
+  "@health1MonthTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health1MonthText": "Willpower becomes stronger.",
 
-  "health2MonthsTitle": "2.5 months without using your dopamine triggers",
+  "health2MonthsTitle": "2.5 months without using your {trigger}s",
+  "@health2MonthsTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health2MonthsText": "Natural joy in simple activities returns.",
 
-  "health3MonthsTitle": "3 months without using your dopamine triggers",
-  "health3MonthsText": "Dopamine levels are mostly restored to baseline.",
+  "health3MonthsTitle": "3 months without using your {trigger}s",
+  "@health3MonthsTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "health3MonthsText": "{trigger} levels are mostly restored to baseline.",
+  "@health3MonthsText": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
 
-  "health1YearTitle": "1 year without using your dopamine triggers",
+  "health1YearTitle": "1 year without using your {trigger}s",
+  "@health1YearTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health1YearText": "Brain pathways have significantly rewired.",
 
-  "health5YearsTitle": "5 years without using your dopamine triggers",
+  "health5YearsTitle": "5 years without using your {trigger}s",
+  "@health5YearsTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health5YearsText": "Sustained long-term cognitive health benefits.",
 
-  "health15YearsTitle": "10-15 without using your dopamine triggers",
+  "health15YearsTitle": "10-15 without using your {trigger}s",
+  "@health15YearsTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health15YearsText": "Maximum mental resilience achieved.",
 
   "homeMenuConfig": "Settings",
@@ -193,19 +345,22 @@
   "@homeMenuAbout": {},
   "homeSnackBarFriendsDisabled": "Friends screen is disabled in settings.",
   "@homeSnackBarFriendsDisabled": {},
-  "homeCigarettesAvoidedText": "Triggers avoided: \n {cigarettesAvoided}",
+  "homeCigarettesAvoidedText": "{trigger}s avoided: \n {cigarettesAvoided}",
   "@homeCigarettesAvoidedText": {
     "placeholders": {
-      "cigarettesAvoided":{
+      "cigarettesAvoided": {
         "type": "String",
         "example": "0"
+      },
+      "trigger": {
+        "type": "String"
       }
     }
   },
   "homeMoneySavedText": "Money saved: \n {moneySaved}",
   "@homeMoneySavedText": {
     "placeholders": {
-      "moneySaved":{
+      "moneySaved": {
         "type": "String",
         "example": "0.0"
       }
@@ -215,8 +370,14 @@
   "@homeRestartProgressText": {},
   "homeTagline": "Track, log, and stay accountable.",
   "@homeTagline": {},
-  "homeSinceLastTitle": "Time since last used trigger",
-  "@homeSinceLastTitle": {},
+  "homeSinceLastTitle": "Time since last used {trigger}",
+  "@homeSinceLastTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "homeLastSmokedLabel": "Last logged: {date}",
   "@homeLastSmokedLabel": {
     "placeholders": {
@@ -230,7 +391,7 @@
   "@homeNotStartedYet": {},
   "homeQuickActionsTitle": "Quick actions",
   "@homeQuickActionsTitle": {},
-  "homeSmokedTodayText": "Dopamine Triggers used today: \n {cigarettesSmoked}",
+  "homeSmokedTodayText": "{trigger}s used today: \n {cigarettesSmoked}",
   "@homeSmokedTodayText": {
     "placeholders": {
       "cigarettesSmoked": {
@@ -239,33 +400,66 @@
       }
     }
   },
-  "homeHoursWithoutSmokingText": "Hours without using dopamine trigger: \n {hours}",
+  "homeHoursWithoutSmokingText": "Hours without using {trigger}: \n {hours}",
   "@homeHoursWithoutSmokingText": {
     "placeholders": {
       "hours": {
         "type": "String",
         "example": "0"
+      },
+      "trigger": {
+        "type": "String"
       }
     }
   },
-  "homeLogCigaretteButton": "Log a dopamine trigger",
-  "@homeLogCigaretteButton": {},
+  "homeLogCigaretteButton": "Log a {trigger}",
+  "@homeLogCigaretteButton": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "homeViewCalendarLogButton": "View calendar log",
   "@homeViewCalendarLogButton": {},
-  "homeSnackBarCigaretteLogged": "Dopamine Trigger logged for today.",
-  "@homeSnackBarCigaretteLogged": {},
+  "homeSnackBarCigaretteLogged": "{trigger} logged for today.",
+  "@homeSnackBarCigaretteLogged": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
 
-  "logScreenTitle": "Dopamine log",
-  "@logScreenTitle": {},
+  "logScreenTitle": "{trigger} log",
+  "@logScreenTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "logScreenToday": "Today",
   "@logScreenToday": {},
-  "logScreenCigaretteSingular": "trigger",
-  "@logScreenCigaretteSingular": {},
-  "logScreenCigarettePlural": "triggers",
-  "@logScreenCigarettePlural": {},
+  "logScreenCigaretteSingular": "{trigger}",
+  "@logScreenCigaretteSingular": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "logScreenCigarettePlural": "{trigger}s",
+  "@logScreenCigarettePlural": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "logScreenSelectedDayHeader": "Selected Day",
   "@logScreenSelectedDayHeader": {},
-  "logScreenSelectedDayText": "{count} triggers on {date}",
+  "logScreenSelectedDayText": "{count} {trigger}s on {date}",
   "@logScreenSelectedDayText": {
     "placeholders": {
       "count": {
@@ -275,13 +469,28 @@
       "date": {
         "type": "String",
         "example": "Jan 1, 2024"
+      },
+      "trigger": {
+        "type": "String"
       }
     }
   },
-  "logScreenEmptyHint": "No entries yet. Log each dopamine trigger to build your calendar.",
-  "@logScreenEmptyHint": {},
-  "logScreenChartTitle": "Dopamine riggers logged",
-  "@logScreenChartTitle": {},
+  "logScreenEmptyHint": "No entries yet. Log each {trigger} to build your calendar.",
+  "@logScreenEmptyHint": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "logScreenChartTitle": "{trigger}s logged",
+  "@logScreenChartTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "logScreenRange7d": "7 days",
   "@logScreenRange7d": {},
   "logScreenRange14d": "14 days",
@@ -296,12 +505,15 @@
   "@logScreenChartEmpty": {},
   "logEditTitle": "Edit entry",
   "@logEditTitle": {},
-  "logEditCountLabel": "Dopamine Triggers on {date}",
+  "logEditCountLabel": "{trigger}s on {date}",
   "@logEditCountLabel": {
     "placeholders": {
       "date": {
         "type": "String",
         "example": "Jan 1, 2024"
+      },
+      "trigger": {
+        "type": "String"
       }
     }
   },
@@ -314,7 +526,14 @@
   "navigationBarCalendar": "Calendar",
   "@navigationBarCalendar": {},
 
-  "healthScreenNoCigarettesYetTitle": "Goals - Log your first dopamine trigger",
+  "healthScreenNoCigarettesYetTitle": "Goals - Log your first {trigger}",
+  "@healthScreenNoCigarettesYetTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
 
   "statsScreenTitle": "Health Stats",
   "statsHeartRateTitle": "Heart Rate (7d average)",

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../components/health_goal_card.dart';
 import 'package:dopamine_tracker/l10n/app_localizations.dart';
 import 'package:dopamine_tracker/components/navigation_bar.dart';
+import '../services/smoke_log_service.dart';
 
 class HealthScreen extends StatefulWidget {
   final Function(ThemeMode) setThemeMode;
@@ -13,6 +13,8 @@ class HealthScreen extends StatefulWidget {
 }
 
 class _HealthScreenState extends State<HealthScreen> {
+  List<Addiction> _addictions = [];
+  Addiction? _selectedAddiction;
   DateTime? lastTrigger;
   int durationSinceLastTrigger = 0;
   bool noTriggers = true; 
@@ -20,19 +22,30 @@ class _HealthScreenState extends State<HealthScreen> {
   @override
   void initState() {
     super.initState();
-    _loadLastTrigger();
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    final list = await DopamineLogService.getAddictions();
+    setState(() {
+      _addictions = list;
+      if (_addictions.isNotEmpty) {
+        _selectedAddiction = _addictions.first;
+      }
+    });
+    await _loadLastTrigger();
   }
 
   Future<void> _loadLastTrigger() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? lastTriggerString = prefs.getString('lastTrigger');
+    if (_selectedAddiction == null) return;
+    
+    final last = await DopamineLogService.getLastTrigger(_selectedAddiction!.id);
 
     if (!mounted) return; 
 
-    if (lastTriggerString != null) {
-      DateTime parsedDate = DateTime.parse(lastTriggerString);
+    if (last != null) {
       setState(() {
-        lastTrigger = parsedDate;
+        lastTrigger = last;
         durationSinceLastTrigger = DateTime.now().difference(lastTrigger!).inMinutes;
         noTriggers = false; 
       });
@@ -45,85 +58,80 @@ class _HealthScreenState extends State<HealthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final addictionName = _selectedAddiction?.name ?? 'Dopamine';
+
     List<Map<String, dynamic>> healthGoals = [
       {
-        'title': AppLocalizations.of(context)!.health2DaysTitle,
-        'description': AppLocalizations.of(context)!.health2DaysText,
+        'title': l10n.health2DaysTitle(addictionName),
+        'description': l10n.health2DaysText(addictionName),
         'time': 2 * 24 * 60,
       },
       {
-        'title': AppLocalizations.of(context)!.health3DaysTitle,
-        'description': AppLocalizations.of(context)!.health3DaysText,
+        'title': l10n.health3DaysTitle(addictionName),
+        'description': l10n.health3DaysText,
         'time': 3 * 24 * 60,
       },
       {
-        'title': AppLocalizations.of(context)!.health7DaysTitle,
-        'description': AppLocalizations.of(context)!.health7DaysText,
+        'title': l10n.health7DaysTitle(addictionName),
+        'description': l10n.health7DaysText,
         'time': 7 * 24 * 60,
       },
       {
-        'title': AppLocalizations.of(context)!.health2WeeksTitle,
-        'description': AppLocalizations.of(context)!.health2WeeksText,
+        'title': l10n.health2WeeksTitle(addictionName),
+        'description': l10n.health2WeeksText,
         'time': 2 * 7 * 24 * 60,
       },
       {
-        'title': AppLocalizations.of(context)!.health1MonthTitle,
-        'description': AppLocalizations.of(context)!.health1MonthText,
+        'title': l10n.health1MonthTitle(addictionName),
+        'description': l10n.health1MonthText,
         'time': 30 * 24 * 60,
       },
       {
-        'title': AppLocalizations.of(context)!.health2MonthsTitle,
-        'description': AppLocalizations.of(context)!.health2MonthsText,
+        'title': l10n.health2MonthsTitle(addictionName),
+        'description': l10n.health2MonthsText,
         'time': (2.5 * 30 * 24 * 60).toInt(),
       },
       {
-        'title': AppLocalizations.of(context)!.health3MonthsTitle,
-        'description': AppLocalizations.of(context)!.health3MonthsText,
+        'title': l10n.health3MonthsTitle(addictionName),
+        'description': l10n.health3MonthsText(addictionName),
         'time': 3 * 30 * 24 * 60,
       },
       {
-        'title': AppLocalizations.of(context)!.health1YearTitle,
-        'description': AppLocalizations.of(context)!.health1YearText,
+        'title': l10n.health1YearTitle(addictionName),
+        'description': l10n.health1YearText,
         'time': 365 * 24 * 60,
       },
       {
-        'title': AppLocalizations.of(context)!.health5YearsTitle,
-        'description': AppLocalizations.of(context)!.health5YearsText,
+        'title': l10n.health5YearsTitle(addictionName),
+        'description': l10n.health5YearsText,
         'time': 5 * 365 * 24 * 60,
       },
       {
-        'title': AppLocalizations.of(context)!.health15YearsTitle,
-        'description': AppLocalizations.of(context)!.health15YearsText,
+        'title': l10n.health15YearsTitle(addictionName),
+        'description': l10n.health15YearsText,
         'time': 15 * 365 * 24 * 60,
       },
     ];
 
-    if (noTriggers) {
-      return Scaffold(
-        body: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              title: Text(AppLocalizations.of(context)?.healthScreenNoCigarettesYetTitle ?? 'Log your first trigger'),
-              floating: true,
-              snap: true,
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              elevation: 0,
+    return Scaffold(
+      appBar: AppBar(
+        title: _addictions.isEmpty 
+          ? Text(l10n.navigationBarHealthGoals)
+          : DropdownButton<Addiction>(
+              value: _selectedAddiction,
+              underline: const SizedBox(),
+              items: _addictions.map((a) => DropdownMenuItem(value: a, child: Text(a.name))).toList(),
+              onChanged: (val) {
+                setState(() => _selectedAddiction = val);
+                _loadLastTrigger();
+              },
             ),
-          ],
-        ),
-        bottomNavigationBar: CustomNavigationBar(currentIndex: 1, setThemeMode: widget.setThemeMode),
-      );
-    } else {
-      return Scaffold(
-        body: CustomScrollView(
+      ),
+      body: noTriggers 
+        ? Center(child: Text(l10n.healthScreenNoCigarettesYetTitle(addictionName)))
+        : CustomScrollView(
           slivers: [
-            SliverAppBar(
-              title: Text(AppLocalizations.of(context)!.navigationBarHealthGoals),
-              floating: true,
-              snap: true,
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              elevation: 0,
-            ),
             SliverPadding(
               padding: const EdgeInsets.all(16.0),
               sliver: lastTrigger == null
@@ -151,8 +159,7 @@ class _HealthScreenState extends State<HealthScreen> {
             ),
           ],
         ),
-        bottomNavigationBar: CustomNavigationBar(currentIndex: 1, setThemeMode: widget.setThemeMode),
-      );
-    }
+      bottomNavigationBar: CustomNavigationBar(currentIndex: 1, setThemeMode: widget.setThemeMode),
+    );
   }
 }

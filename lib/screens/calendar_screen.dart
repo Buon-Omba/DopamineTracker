@@ -292,7 +292,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final todayCount = _countForDay(DateTime.now());
     final combinedEntries = _buildRangeData(localeString);
     final colorScheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final addictionName = _selectedAddiction?.name ?? 'Dopamine';
 
     final bool isToday = isSameDay(_selectedDay, DateTime.now());
     final displayHR = isToday ? (_todayHeartRate ?? 0.0) : _heartRateForDay(_selectedDay);
@@ -301,7 +302,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Scaffold(
       appBar: AppBar(
         title: _addictions.isEmpty 
-          ? Text(l10n?.logScreenTitle ?? 'Dopamine Log')
+          ? Text(l10n.logScreenTitle(addictionName))
           : DropdownButton<Addiction>(
               value: _selectedAddiction,
               underline: const SizedBox(),
@@ -332,7 +333,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      l10n?.logScreenToday ?? 'Today',
+                      l10n.logScreenToday,
                       style: const TextStyle(
                         fontSize: 14,
                         color: Colors.white,
@@ -355,8 +356,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         const SizedBox(width: 8),
                         Text(
                           todayCount == 1 
-                              ? (l10n?.logScreenCigaretteSingular ?? 'trigger')
-                              : (l10n?.logScreenCigarettePlural ?? 'triggers'),
+                              ? l10n.logScreenCigaretteSingular(addictionName)
+                              : l10n.logScreenCigarettePlural(addictionName),
                           style: const TextStyle(
                             fontSize: 18,
                             color: Colors.white,
@@ -473,23 +474,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           segments: [
                             ButtonSegment(
                               value: ChartRange.week,
-                              label: Text(l10n?.logScreenRange7d ?? '7 days'),
+                              label: Text(l10n.logScreenRange7d),
                             ),
                             ButtonSegment(
                               value: ChartRange.twoWeeks,
-                              label: Text(l10n?.logScreenRange14d ?? '14 days'),
+                              label: Text(l10n.logScreenRange14d),
                             ),
                             ButtonSegment(
                               value: ChartRange.month,
-                              label: Text(l10n?.logScreenRange30d ?? '1 month'),
+                              label: Text(l10n.logScreenRange30d),
                             ),
                             ButtonSegment(
                               value: ChartRange.sixMonths,
-                              label: Text(l10n?.logScreenRange180d ?? '6 months'),
+                              label: Text(l10n.logScreenRange180d),
                             ),
                             ButtonSegment(
                               value: ChartRange.year,
-                              label: Text(l10n?.logScreenRange365d ?? '1 year'),
+                              label: Text(l10n.logScreenRange365d),
                             ),
                           ],
                           selected: {_selectedRange},
@@ -538,7 +539,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             maxValue: 100,
                           ),
                         ],
-                        emptyLabel: l10n?.logScreenChartEmpty ?? 'No data in this range yet.',
+                        emptyLabel: l10n.logScreenChartEmpty,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -547,7 +548,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       spacing: 12,
                       runSpacing: 4,
                       children: [
-                        _LegendItem(color: colorScheme.primary, label: 'Triggers'),
+                        _LegendItem(color: colorScheme.primary, label: l10n.logScreenCigarettePlural(addictionName)),
                         _LegendItem(color: Colors.red, label: 'Mood'),
                         _LegendItem(color: Colors.orange, label: 'BPM'),
                         _LegendItem(color: Colors.teal, label: 'Stress (HRV)'),
@@ -568,7 +569,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      l10n?.logScreenSelectedDayHeader ?? 'Selected Day',
+                      l10n.logScreenSelectedDayHeader,
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade700,
@@ -580,79 +581,74 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       formattedDate,
                       style: const TextStyle(
                         fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                       // fontWeight: FontWeight.bold,
                       ),
                     ),
+                    const SizedBox(height: 12),
+                    const Divider(),
                     const SizedBox(height: 8),
-                 //   if (_selectedDayScore != null || displayHR > 0 || displayStress > 0) ...[
-                      const SizedBox(height: 12),
-                      const Divider(),
-                      const SizedBox(height: 8),
                     Row(
                       children: [
-                        Icon(Icons.calendar_month, size: 20, color: Colors.grey,),
-                        const SizedBox(height: 8),
+                        const Icon(Icons.calendar_month, size: 20, color: Colors.grey),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            l10n?.logScreenSelectedDayText(selectedCount.toString(),
-                              formattedDate,) ?? '$selectedCount ${selectedCount == 1 ? (l10n?.logScreenCigaretteSingular ?? "trigger") : (l10n?.logScreenCigarettePlural ?? "triggers")}',
+                            l10n.logScreenSelectedDayText(
+                                  selectedCount.toString(),
+                                  formattedDate,
+                                  addictionName,
+                                ),
                             style: TextStyle(
                               fontSize: 16,
-                              //fontWeight: FontWeight.bold,
-                              //color: Colors.grey,
+                              color: Colors.grey.shade700,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    //  if (_selectedDayScore != null)
-                        Row(
-                          children: [
-                            Icon(
-                              _selectedDayScore! >= 0 ? Icons.sentiment_satisfied_alt : Icons.sentiment_dissatisfied,
-                              color: _selectedDayScore! >= 0 ? Colors.green : Colors.red,
-                              size: 20,
-                            ),
-                            const SizedBox(height: 8),
-                            Expanded(
-                              child: Text(
-                                l10n?.logDailyScore(_selectedDayScore.toString()) ?? 'Wellness Score: $_selectedDayScore',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  //fontWeight: FontWeight.bold,
-                                  color: _selectedDayScore! >= 0 ? Colors.green.shade700 : Colors.red.shade700,
-                                ),
-                              ),
-                            ),
-                          ],
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          (_selectedDayScore ?? 0) >= 0 ? Icons.sentiment_satisfied_alt : Icons.sentiment_dissatisfied,
+                          color: (_selectedDayScore ?? 0) >= 0 ? Colors.green : Colors.red,
+                          size: 20,
                         ),
-                     // if (displayHR > 0) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(Icons.favorite, color: Colors.orange, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              l10n?.logTodayHR(displayHR.round().toString()) ?? 'Heart Rate: ${displayHR.round()} BPM',
-                              style: const TextStyle(fontSize: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            l10n.logDailyScore((_selectedDayScore ?? 0).toString()),
+                            style: TextStyle(
+                              fontSize: 16,
+                             // fontWeight: FontWeight.bold,
+                            //  color: (_selectedDayScore ?? 0) >= 0 ? Colors.green.shade700 : Colors.red.shade700,
                             ),
-                          ],
+                          ),
                         ),
-                      //],
-                      //if (displayStress > 0) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(Icons.psychology, color: Colors.teal, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              l10n?.logTodayStress(displayStress.round().toString()) ?? 'Stress (HRV): ${displayStress.round()} ms',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ],
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.favorite, color: Colors.orange, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.logTodayHR(displayHR.round().toString()),
+                          style: const TextStyle(fontSize: 16),
                         ),
-                     // ],
-                   // ],
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.psychology, color: Colors.teal, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.logTodayStress(displayStress.round().toString()),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -662,9 +658,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  l10n?.logScreenEmptyHint ??
-                      'No data recorded yet. Tap and hold on a day to add entries.',
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  l10n.logScreenEmptyHint(addictionName),
+                //  style: const TextStyle(fontSize: 14, color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -680,39 +675,40 @@ class _CalendarScreenState extends State<CalendarScreen> {
     
     final initial = _countForDay(day);
     final controller = TextEditingController(text: initial.toString());
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final addictionName = _selectedAddiction!.name;
 
     final result = await showDialog<_EditResult>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n?.logEditTitle ?? 'Edit Day'),
+        title: Text(l10n.logEditTitle),
         content: TextField(
           keyboardType: TextInputType.number,
           controller: controller,
           decoration: InputDecoration(
-            labelText: l10n?.logEditCountLabel(
+            labelText: l10n.logEditCountLabel(
                     DateFormat.yMMMd(
                             Localizations.localeOf(context).toString())
-                        .format(day)) ??
-                    'Triggers on ${DateFormat.yMMMd(Localizations.localeOf(context).toString()).format(day)}',
+                        .format(day),
+                    addictionName),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(l10n?.cancel ?? 'Cancel'),
+            child: Text(l10n.cancel),
           ),
           if (initial > 0)
             TextButton(
               onPressed: () => Navigator.pop(context, _EditResult.delete),
               child: Text(
-                l10n?.delete ?? 'Delete',
+                l10n.delete,
                 style: const TextStyle(color: Colors.red),
               ),
             ),
           TextButton(
             onPressed: () => Navigator.pop(context, _EditResult.save),
-            child: Text(l10n?.save ?? 'Save'),
+            child: Text(l10n.save),
           ),
         ],
       ),

@@ -246,7 +246,7 @@ class _DailyLogScreenState extends State<DailyLogScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Text(
-            l10n.logScreenChartTitle, // Or a more generic "Trackers"
+            l10n.logScreenChartTitle('Addiction'),
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),

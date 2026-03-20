@@ -11,6 +11,7 @@ import 'package:flutter/services.dart'; // For clipboard
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/smoke_log_service.dart';
 
 class FriendsScreen extends StatefulWidget {
   final Function(ThemeMode) setThemeMode;
@@ -27,16 +28,27 @@ class _FriendsScreenState extends State<FriendsScreen> {
   int weeklyOccurrences = 0;
   int dailyIntensity = 0;
   Timer? _refreshTimer;
+  String _addictionName = 'Dopamine';
 
   @override
   void initState() {
     super.initState();
     _loadUserId(); // Load user ID on startup
     _loadConfig().then((_) => _loadFriends()); // Load config then friends
+    _loadAddictionName();
     _refreshTimer = Timer.periodic(
       const Duration(minutes: 1),
       (_) => _updateFriendDerivedStats(),
     );
+  }
+
+  Future<void> _loadAddictionName() async {
+    final addictions = await DopamineLogService.getAddictions();
+    if (addictions.isNotEmpty) {
+      setState(() {
+        _addictionName = addictions.first.name;
+      });
+    }
   }
 
   // Load the user ID from SharedPreferences
@@ -207,9 +219,10 @@ class _FriendsScreenState extends State<FriendsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.friendsScreenTitle),
+        title: Text(l10n.friendsScreenTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -223,7 +236,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
             child: friends.isEmpty
                 ? Center(
                     child: Text(
-                      AppLocalizations.of(context)!.friendsNoFriendsText,
+                      l10n.friendsNoFriendsText,
                       style: const TextStyle(fontSize: 18, color: Colors.grey),
                     ),
                   )
@@ -276,8 +289,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                                   const Icon(Icons.bolt, color: Colors.grey),
                                   const SizedBox(width: 8),
                                   Text(
-                                    AppLocalizations.of(context)!
-                                        .friendsLastSmokedText(
+                                    l10n.friendsLastSmokedText(
                                       friend['last_smoked'] != null
                                           ? DateFormat.yMMMMd(
                                                   Localizations.localeOf(
@@ -286,7 +298,8 @@ class _FriendsScreenState extends State<FriendsScreen> {
                                               .add_Hm()
                                               .format(DateTime.parse(
                                                   friend['last_smoked']))
-                                          : AppLocalizations.of(context)!.n_a,
+                                          : l10n.n_a,
+                                      _addictionName,
                                     ),
                                   ),
                                 ],
@@ -297,14 +310,14 @@ class _FriendsScreenState extends State<FriendsScreen> {
                                   const Icon(Icons.check_circle, color: Colors.green),
                                   const SizedBox(width: 8),
                                   Text(
-                                    AppLocalizations.of(context)!
-                                        .friendsCigarettesAvoidedText(
+                                    l10n.friendsCigarettesAvoidedText(
                                       _formatNumber(
                                         friend['derived_cig_avoided'] ??
                                             friend['cig_avoided'] ??
                                             0,
                                         decimals: 0,
                                       ),
+                                      _addictionName,
                                     ),
                                   ),
                                 ],
@@ -315,8 +328,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                                   const Icon(Icons.star, color: Colors.blue),
                                   const SizedBox(width: 8),
                                   Text(
-                                    AppLocalizations.of(context)!
-                                        .friendsMoneySavedText(
+                                    l10n.friendsMoneySavedText(
                                       _formatNumber(
                                         friend['derived_money_saved'] ??
                                             friend['money_saved'] ??
@@ -332,8 +344,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                                   const Icon(Icons.access_time, color: Colors.orange),
                                   const SizedBox(width: 8),
                                   Text(
-                                    AppLocalizations.of(context)!
-                                        .friendsLastAnnouncedText(
+                                    l10n.friendsLastAnnouncedText(
                                       friend['last_announced'] != null
                                           ? DateFormat.yMMMMd(
                                                   Localizations.localeOf(
@@ -344,7 +355,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                                                   .fromMillisecondsSinceEpoch(
                                                       friend['last_announced'] *
                                                           1000))
-                                          : AppLocalizations.of(context)!.n_a,
+                                          : l10n.n_a,
                                     ),
                                   ),
                                 ],
@@ -365,7 +376,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                   icon: const Icon(Icons.qr_code),
                   onPressed: _showQrCodeDialog,
                   label:
-                      Text(AppLocalizations.of(context)!.friendsButtonShowUID),
+                      Text(l10n.friendsButtonShowUID),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                     textStyle: const TextStyle(fontSize: 18),
@@ -382,8 +393,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                           children: [
                             ListTile(
                               leading: const Icon(Icons.edit),
-                              title: Text(AppLocalizations.of(context)!
-                                  .friendsButtonShowUIDEnterUIDText),
+                              title: Text(l10n.friendsButtonShowUIDEnterUIDText),
                               onTap: () {
                                 Navigator.pop(context);
                                 _enterManualUid();
@@ -395,7 +405,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                     );
                   },
                   label: Text(
-                      AppLocalizations.of(context)!.friendsButtonAddFriend),
+                      l10n.friendsButtonAddFriend),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                     textStyle: const TextStyle(fontSize: 18),

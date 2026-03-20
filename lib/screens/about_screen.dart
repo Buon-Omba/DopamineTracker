@@ -1,9 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dopamine_tracker/l10n/app_localizations.dart';
+import '../services/smoke_log_service.dart';
 
-class AboutScreen extends StatelessWidget {
+class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
+
+  @override
+  State<AboutScreen> createState() => _AboutScreenState();
+}
+
+class _AboutScreenState extends State<AboutScreen> {
+  String _addictionName = 'Dopamine';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAddictionName();
+  }
+
+  Future<void> _loadAddictionName() async {
+    final addictions = await DopamineLogService.getAddictions();
+    if (addictions.isNotEmpty) {
+      setState(() {
+        _addictionName = addictions.first.name;
+      });
+    }
+  }
 
   // Function to open URLs
   void _launchURL(String url) async {
@@ -15,9 +38,10 @@ class AboutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.aboutScreenTitle),
+        title: Text(l10n.aboutScreenTitle(_addictionName)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -25,41 +49,41 @@ class AboutScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppLocalizations.of(context)!.aboutDescriptionTitle,
+              l10n.aboutDescriptionTitle(_addictionName),
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             Text(
-              AppLocalizations.of(context)!.aboutDescriptionText,
+              l10n.aboutDescriptionText(_addictionName),
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 20),
             Text(
-              AppLocalizations.of(context)!.aboutLinksTitle,
+              l10n.aboutLinksTitle,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             InkWell(
               child: Text(
-                AppLocalizations.of(context)!.aboutLinksViewSourceCode,
+                l10n.aboutLinksViewSourceCode,
                 style: const TextStyle(fontSize: 16, color: Colors.blue),
               ),
               onTap: () => _launchURL('https://forgejo.it/Buon-Omba/DopamineTracker'),
             ),
             const SizedBox(height: 20),
             Text(
-              AppLocalizations.of(context)!.aboutCreditsTitle,
+              l10n.aboutCreditsTitle,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             Text(
-              AppLocalizations.of(context)!.aboutCreditsText,
+              l10n.aboutCreditsText,
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 10),
             InkWell(
               child: Text(
-                AppLocalizations.of(context)!.aboutCreditsOpenMoji,
+                l10n.aboutCreditsOpenMoji,
                 style: const TextStyle(fontSize: 16, color: Colors.blue),
               ),
               onTap: () => _launchURL('https://openmoji.org/'),
@@ -67,7 +91,7 @@ class AboutScreen extends StatelessWidget {
             const SizedBox(height: 10),
             InkWell(
               child: Text(
-                AppLocalizations.of(context)!.aboutCreditsMyWebsite,
+                l10n.aboutCreditsMyWebsite,
                 style: const TextStyle(fontSize: 16, color: Colors.blue),
               ),
               onTap: () => _launchURL('https://retiolus.net/'),

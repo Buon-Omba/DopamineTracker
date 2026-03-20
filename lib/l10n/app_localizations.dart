@@ -143,20 +143,20 @@ abstract class AppLocalizations {
   /// No description provided for @aboutScreenTitle.
   ///
   /// In en, this message translates to:
-  /// **'About Dopamine Tracker'**
-  String get aboutScreenTitle;
+  /// **'About {trigger} Tracker'**
+  String aboutScreenTitle(String trigger);
 
   /// No description provided for @aboutDescriptionTitle.
   ///
   /// In en, this message translates to:
-  /// **'Dopamine Tracker'**
-  String get aboutDescriptionTitle;
+  /// **'{trigger} Tracker'**
+  String aboutDescriptionTitle(String trigger);
 
   /// No description provided for @aboutDescriptionText.
   ///
   /// In en, this message translates to:
-  /// **'Dopamine Tracker is an open-source app designed to help you track the time since your last dopamine trigger and see the progress you\'ve made. It calculates the dopamine triggers avoided and the potential health benefits based on your habits. Is a fork of https://codeberg.org/retiolus/ExHale who add a calendar feature.'**
-  String get aboutDescriptionText;
+  /// **'{trigger} Tracker is an open-source app designed to help you track the time since your last {trigger} and see the progress you\'ve made. It calculates the {trigger}s avoided and the potential health benefits based on your habits. Is a fork of https://codeberg.org/retiolus/ExHale who add a calendar feature.'**
+  String aboutDescriptionText(String trigger);
 
   /// No description provided for @aboutPrivacyTitle.
   ///
@@ -167,8 +167,8 @@ abstract class AppLocalizations {
   /// No description provided for @aboutPrivacyText.
   ///
   /// In en, this message translates to:
-  /// **'Dopamine Tracker respects your privacy. It does not track your data, and all your information is stored locally on your device. The source code is available for review, ensuring complete transparency.'**
-  String get aboutPrivacyText;
+  /// **'{trigger} Tracker respects your privacy. It does not track your data, and all your information is stored locally on your device. The source code is available for review, ensuring complete transparency.'**
+  String aboutPrivacyText(String trigger);
 
   /// No description provided for @aboutLinksTitle.
   ///
@@ -257,14 +257,14 @@ abstract class AppLocalizations {
   /// No description provided for @configOptionPacketsPerWeekText.
   ///
   /// In en, this message translates to:
-  /// **'Average dopamine trigger used'**
-  String get configOptionPacketsPerWeekText;
+  /// **'Average {trigger} used'**
+  String configOptionPacketsPerWeekText(String trigger);
 
   /// No description provided for @configOptionCigarettesPerPacketText.
   ///
   /// In en, this message translates to:
-  /// **'Average daily dopamine trigger used'**
-  String get configOptionCigarettesPerPacketText;
+  /// **'Average daily {trigger} used'**
+  String configOptionCigarettesPerPacketText(String trigger);
 
   /// No description provided for @configOptionCounterStartDateText.
   ///
@@ -359,14 +359,38 @@ abstract class AppLocalizations {
   /// No description provided for @configImportErrorMessage.
   ///
   /// In en, this message translates to:
-  /// **'Invalid or corrupted file. Use a valid Dopamine Tracker backup JSON.'**
-  String get configImportErrorMessage;
+  /// **'Invalid or corrupted file. Use a valid {trigger} Tracker backup JSON.'**
+  String configImportErrorMessage(String trigger);
 
   /// No description provided for @configImportCancelled.
   ///
   /// In en, this message translates to:
   /// **'Import cancelled.'**
   String get configImportCancelled;
+
+  /// No description provided for @configDeleteAddictionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete addiction'**
+  String get configDeleteAddictionTitle;
+
+  /// No description provided for @configDeleteAddictionButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all data for {trigger}'**
+  String configDeleteAddictionButton(String trigger);
+
+  /// No description provided for @configDeleteAddictionConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete all data for {trigger}? This action cannot be undone.'**
+  String configDeleteAddictionConfirmation(String trigger);
+
+  /// No description provided for @configDeleteAddictionSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Addiction deleted successfully'**
+  String get configDeleteAddictionSuccess;
 
   /// No description provided for @friendsDialogUIDYourQRText.
   ///
@@ -443,14 +467,14 @@ abstract class AppLocalizations {
   /// No description provided for @friendsLastSmokedText.
   ///
   /// In en, this message translates to:
-  /// **'Last Trigger: {lastSmoked}'**
-  String friendsLastSmokedText(String lastSmoked);
+  /// **'Last {trigger}: {lastSmoked}'**
+  String friendsLastSmokedText(String lastSmoked, String trigger);
 
   /// No description provided for @friendsCigarettesAvoidedText.
   ///
   /// In en, this message translates to:
-  /// **'Triggers avoided: {cigAvoided}'**
-  String friendsCigarettesAvoidedText(String cigAvoided);
+  /// **'{trigger}s avoided: {cigAvoided}'**
+  String friendsCigarettesAvoidedText(String cigAvoided, String trigger);
 
   /// No description provided for @friendsMoneySavedText.
   ///
@@ -491,20 +515,20 @@ abstract class AppLocalizations {
   /// No description provided for @health2DaysTitle.
   ///
   /// In en, this message translates to:
-  /// **'2 days without using your dopamine triggers'**
-  String get health2DaysTitle;
+  /// **'2 days without using your {trigger}s'**
+  String health2DaysTitle(String trigger);
 
   /// No description provided for @health2DaysText.
   ///
   /// In en, this message translates to:
-  /// **'Dopamine receptors begin to re-sensitize.'**
-  String get health2DaysText;
+  /// **'{trigger} receptors begin to re-sensitize.'**
+  String health2DaysText(String trigger);
 
   /// No description provided for @health3DaysTitle.
   ///
   /// In en, this message translates to:
-  /// **'3 days without using your dopamine triggers'**
-  String get health3DaysTitle;
+  /// **'3 days without using your {trigger}s'**
+  String health3DaysTitle(String trigger);
 
   /// No description provided for @health3DaysText.
   ///
@@ -515,8 +539,8 @@ abstract class AppLocalizations {
   /// No description provided for @health7DaysTitle.
   ///
   /// In en, this message translates to:
-  /// **'7 days without using your dopamine triggers'**
-  String get health7DaysTitle;
+  /// **'7 days without using your {trigger}s'**
+  String health7DaysTitle(String trigger);
 
   /// No description provided for @health7DaysText.
   ///
@@ -527,8 +551,8 @@ abstract class AppLocalizations {
   /// No description provided for @health2WeeksTitle.
   ///
   /// In en, this message translates to:
-  /// **'2 weeks without using your dopamine triggers'**
-  String get health2WeeksTitle;
+  /// **'2 weeks without using your {trigger}s'**
+  String health2WeeksTitle(String trigger);
 
   /// No description provided for @health2WeeksText.
   ///
@@ -539,8 +563,8 @@ abstract class AppLocalizations {
   /// No description provided for @health1MonthTitle.
   ///
   /// In en, this message translates to:
-  /// **'1 month without using your dopamine triggers'**
-  String get health1MonthTitle;
+  /// **'1 month without using your {trigger}s'**
+  String health1MonthTitle(String trigger);
 
   /// No description provided for @health1MonthText.
   ///
@@ -551,8 +575,8 @@ abstract class AppLocalizations {
   /// No description provided for @health2MonthsTitle.
   ///
   /// In en, this message translates to:
-  /// **'2.5 months without using your dopamine triggers'**
-  String get health2MonthsTitle;
+  /// **'2.5 months without using your {trigger}s'**
+  String health2MonthsTitle(String trigger);
 
   /// No description provided for @health2MonthsText.
   ///
@@ -563,20 +587,20 @@ abstract class AppLocalizations {
   /// No description provided for @health3MonthsTitle.
   ///
   /// In en, this message translates to:
-  /// **'3 months without using your dopamine triggers'**
-  String get health3MonthsTitle;
+  /// **'3 months without using your {trigger}s'**
+  String health3MonthsTitle(String trigger);
 
   /// No description provided for @health3MonthsText.
   ///
   /// In en, this message translates to:
-  /// **'Dopamine levels are mostly restored to baseline.'**
-  String get health3MonthsText;
+  /// **'{trigger} levels are mostly restored to baseline.'**
+  String health3MonthsText(String trigger);
 
   /// No description provided for @health1YearTitle.
   ///
   /// In en, this message translates to:
-  /// **'1 year without using your dopamine triggers'**
-  String get health1YearTitle;
+  /// **'1 year without using your {trigger}s'**
+  String health1YearTitle(String trigger);
 
   /// No description provided for @health1YearText.
   ///
@@ -587,8 +611,8 @@ abstract class AppLocalizations {
   /// No description provided for @health5YearsTitle.
   ///
   /// In en, this message translates to:
-  /// **'5 years without using your dopamine triggers'**
-  String get health5YearsTitle;
+  /// **'5 years without using your {trigger}s'**
+  String health5YearsTitle(String trigger);
 
   /// No description provided for @health5YearsText.
   ///
@@ -599,8 +623,8 @@ abstract class AppLocalizations {
   /// No description provided for @health15YearsTitle.
   ///
   /// In en, this message translates to:
-  /// **'10-15 without using your dopamine triggers'**
-  String get health15YearsTitle;
+  /// **'10-15 without using your {trigger}s'**
+  String health15YearsTitle(String trigger);
 
   /// No description provided for @health15YearsText.
   ///
@@ -629,8 +653,8 @@ abstract class AppLocalizations {
   /// No description provided for @homeCigarettesAvoidedText.
   ///
   /// In en, this message translates to:
-  /// **'Triggers avoided: \n {cigarettesAvoided}'**
-  String homeCigarettesAvoidedText(String cigarettesAvoided);
+  /// **'{trigger}s avoided: \n {cigarettesAvoided}'**
+  String homeCigarettesAvoidedText(String cigarettesAvoided, String trigger);
 
   /// No description provided for @homeMoneySavedText.
   ///
@@ -653,8 +677,8 @@ abstract class AppLocalizations {
   /// No description provided for @homeSinceLastTitle.
   ///
   /// In en, this message translates to:
-  /// **'Time since last used trigger'**
-  String get homeSinceLastTitle;
+  /// **'Time since last used {trigger}'**
+  String homeSinceLastTitle(String trigger);
 
   /// No description provided for @homeLastSmokedLabel.
   ///
@@ -677,20 +701,20 @@ abstract class AppLocalizations {
   /// No description provided for @homeSmokedTodayText.
   ///
   /// In en, this message translates to:
-  /// **'Dopamine Triggers used today: \n {cigarettesSmoked}'**
-  String homeSmokedTodayText(String cigarettesSmoked);
+  /// **'{trigger}s used today: \n {cigarettesSmoked}'**
+  String homeSmokedTodayText(String cigarettesSmoked, Object trigger);
 
   /// No description provided for @homeHoursWithoutSmokingText.
   ///
   /// In en, this message translates to:
-  /// **'Hours without using dopamine trigger: \n {hours}'**
-  String homeHoursWithoutSmokingText(String hours);
+  /// **'Hours without using {trigger}: \n {hours}'**
+  String homeHoursWithoutSmokingText(String hours, String trigger);
 
   /// No description provided for @homeLogCigaretteButton.
   ///
   /// In en, this message translates to:
-  /// **'Log a dopamine trigger'**
-  String get homeLogCigaretteButton;
+  /// **'Log a {trigger}'**
+  String homeLogCigaretteButton(String trigger);
 
   /// No description provided for @homeViewCalendarLogButton.
   ///
@@ -701,14 +725,14 @@ abstract class AppLocalizations {
   /// No description provided for @homeSnackBarCigaretteLogged.
   ///
   /// In en, this message translates to:
-  /// **'Dopamine Trigger logged for today.'**
-  String get homeSnackBarCigaretteLogged;
+  /// **'{trigger} logged for today.'**
+  String homeSnackBarCigaretteLogged(String trigger);
 
   /// No description provided for @logScreenTitle.
   ///
   /// In en, this message translates to:
-  /// **'Dopamine log'**
-  String get logScreenTitle;
+  /// **'{trigger} log'**
+  String logScreenTitle(String trigger);
 
   /// No description provided for @logScreenToday.
   ///
@@ -719,14 +743,14 @@ abstract class AppLocalizations {
   /// No description provided for @logScreenCigaretteSingular.
   ///
   /// In en, this message translates to:
-  /// **'trigger'**
-  String get logScreenCigaretteSingular;
+  /// **'{trigger}'**
+  String logScreenCigaretteSingular(String trigger);
 
   /// No description provided for @logScreenCigarettePlural.
   ///
   /// In en, this message translates to:
-  /// **'triggers'**
-  String get logScreenCigarettePlural;
+  /// **'{trigger}s'**
+  String logScreenCigarettePlural(String trigger);
 
   /// No description provided for @logScreenSelectedDayHeader.
   ///
@@ -737,20 +761,20 @@ abstract class AppLocalizations {
   /// No description provided for @logScreenSelectedDayText.
   ///
   /// In en, this message translates to:
-  /// **'{count} triggers on {date}'**
-  String logScreenSelectedDayText(String count, String date);
+  /// **'{count} {trigger}s on {date}'**
+  String logScreenSelectedDayText(String count, String date, String trigger);
 
   /// No description provided for @logScreenEmptyHint.
   ///
   /// In en, this message translates to:
-  /// **'No entries yet. Log each dopamine trigger to build your calendar.'**
-  String get logScreenEmptyHint;
+  /// **'No entries yet. Log each {trigger} to build your calendar.'**
+  String logScreenEmptyHint(String trigger);
 
   /// No description provided for @logScreenChartTitle.
   ///
   /// In en, this message translates to:
-  /// **'Dopamine riggers logged'**
-  String get logScreenChartTitle;
+  /// **'{trigger}s logged'**
+  String logScreenChartTitle(String trigger);
 
   /// No description provided for @logScreenRange7d.
   ///
@@ -797,8 +821,8 @@ abstract class AppLocalizations {
   /// No description provided for @logEditCountLabel.
   ///
   /// In en, this message translates to:
-  /// **'Dopamine Triggers on {date}'**
-  String logEditCountLabel(String date);
+  /// **'{trigger}s on {date}'**
+  String logEditCountLabel(String date, String trigger);
 
   /// No description provided for @navigationFriendsDisabled.
   ///
@@ -827,8 +851,8 @@ abstract class AppLocalizations {
   /// No description provided for @healthScreenNoCigarettesYetTitle.
   ///
   /// In en, this message translates to:
-  /// **'Goals - Log your first dopamine trigger'**
-  String get healthScreenNoCigarettesYetTitle;
+  /// **'Goals - Log your first {trigger}'**
+  String healthScreenNoCigarettesYetTitle(String trigger);
 
   /// No description provided for @statsScreenTitle.
   ///

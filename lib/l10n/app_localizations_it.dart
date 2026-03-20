@@ -30,21 +30,27 @@ class AppLocalizationsIt extends AppLocalizations {
   String get save => 'Salva';
 
   @override
-  String get aboutScreenTitle => 'Informazioni su Dopamine Tracker';
+  String aboutScreenTitle(String trigger) {
+    return 'Informazioni su Dopamine Tracker';
+  }
 
   @override
-  String get aboutDescriptionTitle => 'Dopamine Tracker';
+  String aboutDescriptionTitle(String trigger) {
+    return 'Dopamine Tracker';
+  }
 
   @override
-  String get aboutDescriptionText =>
-      'Dopamine Tracker è un app open-source pensata per aiutarti a tracciare il tempo dall\'ultimo stimolo di dopamina e vedere i progressi fatti. Calcola gli stimoli evitati e i benefici per la salute in base alle tue abitudini. Questa app è un fork di https://codeberg.org/retiolus/ExHale che aggiunge la funzionalità calendario.';
+  String aboutDescriptionText(String trigger) {
+    return 'Dopamine Tracker è un app open-source pensata per aiutarti a tracciare il tempo dall\'ultimo stimolo di dopamina e vedere i progressi fatti. Calcola gli stimoli evitati e i benefici per la salute in base alle tue abitudini. Questa app è un fork di https://codeberg.org/retiolus/ExHale che aggiunge la funzionalità calendario.';
+  }
 
   @override
   String get aboutPrivacyTitle => 'Privacy e Open Source';
 
   @override
-  String get aboutPrivacyText =>
-      'Dopamine Tracker rispetta la tua privacy. Non traccia i tuoi dati e tutte le tue informazioni sono memorizzate localmente sul tuo dispositivo. Il codice sorgente è disponibile per la revisione, garantendo completa trasparenza.';
+  String aboutPrivacyText(String trigger) {
+    return 'Dopamine Tracker rispetta la tua privacy. Non traccia i tuoi dati e tutte le tue informazioni sono memorizzate localmente sul tuo dispositivo. Il codice sorgente è disponibile per la revisione, garantendo completa trasparenza.';
+  }
 
   @override
   String get aboutLinksTitle => 'Collegamenti';
@@ -94,11 +100,14 @@ class AppLocalizationsIt extends AppLocalizations {
   String get configOptionEnableFriendsText => 'Abilita Amici';
 
   @override
-  String get configOptionPacketsPerWeekText => 'Media occorrenze settimanali';
+  String configOptionPacketsPerWeekText(String trigger) {
+    return 'Media occorrenze settimanali';
+  }
 
   @override
-  String get configOptionCigarettesPerPacketText =>
-      'Intensità media giornaliera';
+  String configOptionCigarettesPerPacketText(String trigger) {
+    return 'Intensità media giornaliera';
+  }
 
   @override
   String get configOptionCounterStartDateText => 'Data di Inizio Contatore';
@@ -148,11 +157,29 @@ class AppLocalizationsIt extends AppLocalizations {
       'Dati importati con successo. Riavvia l\'app se necessario.';
 
   @override
-  String get configImportErrorMessage =>
-      'File non valido o corrotto. Usa un file di backup JSON di Dopamine Tracker.';
+  String configImportErrorMessage(String trigger) {
+    return 'File non valido o corrotto. Usa un file di backup JSON di Dopamine Tracker.';
+  }
 
   @override
   String get configImportCancelled => 'Importazione annullata.';
+
+  @override
+  String get configDeleteAddictionTitle => 'Elimina dipendenza';
+
+  @override
+  String configDeleteAddictionButton(String trigger) {
+    return 'Elimina tutti i dati per $trigger';
+  }
+
+  @override
+  String configDeleteAddictionConfirmation(String trigger) {
+    return 'Sei sicuro di voler eliminare tutti i dati per $trigger? Questa operazione non può essere annullata.';
+  }
+
+  @override
+  String get configDeleteAddictionSuccess =>
+      'Dipendenza eliminata con successo';
 
   @override
   String get friendsDialogUIDYourQRText => 'Il Tuo Codice QR';
@@ -193,12 +220,12 @@ class AppLocalizationsIt extends AppLocalizations {
       'Nessun amico ancora, aggiungine alcuni per vedere i loro progressi!';
 
   @override
-  String friendsLastSmokedText(String lastSmoked) {
+  String friendsLastSmokedText(String lastSmoked, String trigger) {
     return 'Ultimo Reset: \n $lastSmoked';
   }
 
   @override
-  String friendsCigarettesAvoidedText(String cigAvoided) {
+  String friendsCigarettesAvoidedText(String cigAvoided, String trigger) {
     return 'Stimoli evitati: \n $cigAvoided';
   }
 
@@ -225,68 +252,90 @@ class AppLocalizationsIt extends AppLocalizations {
   String get friendsDialogEditFriendsNameTitle => 'Modifica Nome Amico';
 
   @override
-  String get health2DaysTitle => '2 giorni dopo il reset';
+  String health2DaysTitle(String trigger) {
+    return '2 giorni dopo il reset';
+  }
 
   @override
-  String get health2DaysText =>
-      'I recettori della dopamina iniziano a ri-sensibilizzarsi.';
+  String health2DaysText(String trigger) {
+    return 'I recettori della dopamina iniziano a ri-sensibilizzarsi.';
+  }
 
   @override
-  String get health3DaysTitle => '3 giorni dopo il reset';
+  String health3DaysTitle(String trigger) {
+    return '3 giorni dopo il reset';
+  }
 
   @override
   String get health3DaysText =>
       'La chiarezza mentale inizia a migliorare e la concentrazione aumenta.';
 
   @override
-  String get health7DaysTitle => '7 giorni dopo il reset';
+  String health7DaysTitle(String trigger) {
+    return '7 giorni dopo il reset';
+  }
 
   @override
   String get health7DaysText =>
       'La stabilità dell\'umore ritorna gradualmente.';
 
   @override
-  String get health2WeeksTitle => '2 settimane dopo il reset';
+  String health2WeeksTitle(String trigger) {
+    return '2 settimane dopo il reset';
+  }
 
   @override
   String get health2WeeksText => 'La qualità del sonno migliora.';
 
   @override
-  String get health1MonthTitle => '1 mese dopo il reset';
+  String health1MonthTitle(String trigger) {
+    return '1 mese dopo il reset';
+  }
 
   @override
   String get health1MonthText => 'La forza di volontà diventa più forte.';
 
   @override
-  String get health2MonthsTitle => '2 mesi e mezzo dopo il reset';
+  String health2MonthsTitle(String trigger) {
+    return '2 mesi e mezzo dopo il reset';
+  }
 
   @override
   String get health2MonthsText =>
       'Ritorna la gioia naturale nelle attività semplici.';
 
   @override
-  String get health3MonthsTitle => '3 mesi dopo il reset';
+  String health3MonthsTitle(String trigger) {
+    return '3 mesi dopo il reset';
+  }
 
   @override
-  String get health3MonthsText =>
-      'I livelli di dopamina sono quasi completamente tornati alla normalità.';
+  String health3MonthsText(String trigger) {
+    return 'I livelli di dopamina sono quasi completamente tornati alla normalità.';
+  }
 
   @override
-  String get health1YearTitle => '1 anno dopo il reset';
+  String health1YearTitle(String trigger) {
+    return '1 anno dopo il reset';
+  }
 
   @override
   String get health1YearText =>
       'I percorsi cerebrali si sono significativamente ricollegati.';
 
   @override
-  String get health5YearsTitle => '5 anni dopo il reset';
+  String health5YearsTitle(String trigger) {
+    return '5 anni dopo il reset';
+  }
 
   @override
   String get health5YearsText =>
       'Benefici cognitivi sostenuti a lungo termine.';
 
   @override
-  String get health15YearsTitle => '10-15 anni dopo il reset';
+  String health15YearsTitle(String trigger) {
+    return '10-15 anni dopo il reset';
+  }
 
   @override
   String get health15YearsText => 'Massima resilienza mentale raggiunta.';
@@ -302,7 +351,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'La schermata Amici è disabilitata nelle impostazioni.';
 
   @override
-  String homeCigarettesAvoidedText(String cigarettesAvoided) {
+  String homeCigarettesAvoidedText(String cigarettesAvoided, String trigger) {
     return 'Stimoli evitati: \n $cigarettesAvoided';
   }
 
@@ -318,7 +367,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get homeTagline => 'Traccia, registra e resta costante.';
 
   @override
-  String get homeSinceLastTitle => 'Tempo dall\'ultimo reset';
+  String homeSinceLastTitle(String trigger) {
+    return 'Tempo dall\'ultimo reset';
+  }
 
   @override
   String homeLastSmokedLabel(String date) {
@@ -332,50 +383,63 @@ class AppLocalizationsIt extends AppLocalizations {
   String get homeQuickActionsTitle => 'Azioni rapide';
 
   @override
-  String homeSmokedTodayText(String cigarettesSmoked) {
+  String homeSmokedTodayText(String cigarettesSmoked, Object trigger) {
     return 'Reset oggi: \n $cigarettesSmoked';
   }
 
   @override
-  String homeHoursWithoutSmokingText(String hours) {
+  String homeHoursWithoutSmokingText(String hours, String trigger) {
     return 'Ore senza stimoli: \n $hours';
   }
 
   @override
-  String get homeLogCigaretteButton => 'Registra un reset';
+  String homeLogCigaretteButton(String trigger) {
+    return 'Registra un reset';
+  }
 
   @override
   String get homeViewCalendarLogButton => 'Calendario';
 
   @override
-  String get homeSnackBarCigaretteLogged => 'Reset registrato per oggi.';
+  String homeSnackBarCigaretteLogged(String trigger) {
+    return 'Reset registrato per oggi.';
+  }
 
   @override
-  String get logScreenTitle => 'Registro Dopamina';
+  String logScreenTitle(String trigger) {
+    return 'Registro Dopamina';
+  }
 
   @override
   String get logScreenToday => 'Oggi';
 
   @override
-  String get logScreenCigaretteSingular => 'reset';
+  String logScreenCigaretteSingular(String trigger) {
+    return 'reset';
+  }
 
   @override
-  String get logScreenCigarettePlural => 'reset';
+  String logScreenCigarettePlural(String trigger) {
+    return 'reset';
+  }
 
   @override
   String get logScreenSelectedDayHeader => 'Giorno selezionato';
 
   @override
-  String logScreenSelectedDayText(String count, String date) {
+  String logScreenSelectedDayText(String count, String date, String trigger) {
     return '$count reset il $date';
   }
 
   @override
-  String get logScreenEmptyHint =>
-      'Nessuna voce ancora. Registra ogni reset per costruire il tuo calendario.';
+  String logScreenEmptyHint(String trigger) {
+    return 'Nessuna voce ancora. Registra ogni reset per costruire il tuo calendario.';
+  }
 
   @override
-  String get logScreenChartTitle => 'Reset registrati';
+  String logScreenChartTitle(String trigger) {
+    return 'Reset registrati';
+  }
 
   @override
   String get logScreenRange7d => '7 giorni';
@@ -399,7 +463,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get logEditTitle => 'Modifica voce';
 
   @override
-  String logEditCountLabel(String date) {
+  String logEditCountLabel(String date, String trigger) {
     return 'Reset il $date';
   }
 
@@ -417,8 +481,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get navigationBarCalendar => 'Calendario';
 
   @override
-  String get healthScreenNoCigarettesYetTitle =>
-      'Traguardi - Registra il tuo primo reset';
+  String healthScreenNoCigarettesYetTitle(String trigger) {
+    return 'Traguardi - Registra il tuo primo reset';
+  }
 
   @override
   String get statsScreenTitle => 'Statistiche Salute';

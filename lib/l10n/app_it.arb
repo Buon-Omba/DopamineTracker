@@ -87,6 +87,26 @@
   "@configImportErrorMessage": {},
   "configImportCancelled": "Importazione annullata.",
   "@configImportCancelled": {},
+  "configDeleteAddictionTitle": "Elimina dipendenza",
+  "@configDeleteAddictionTitle": {},
+  "configDeleteAddictionButton": "Elimina tutti i dati per {trigger}",
+  "@configDeleteAddictionButton": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "configDeleteAddictionConfirmation": "Sei sicuro di voler eliminare tutti i dati per {trigger}? Questa operazione non può essere annullata.",
+  "@configDeleteAddictionConfirmation": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "configDeleteAddictionSuccess": "Dipendenza eliminata con successo",
+  "@configDeleteAddictionSuccess": {},
 
   "friendsDialogUIDYourQRText": "Il Tuo Codice QR",
   "@friendsDialogUIDYourQRText": {},

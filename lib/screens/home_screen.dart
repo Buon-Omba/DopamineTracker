@@ -160,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
           content:
-              Text(AppLocalizations.of(context)!.homeSnackBarCigaretteLogged)),
+              Text(AppLocalizations.of(context)!.homeSnackBarCigaretteLogged(selectedAddiction?.name ?? 'Dopamine'))),
     );
   }
 
@@ -224,6 +224,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ? DateTime.now().difference(lastTrigger!)
         : const Duration();
     final locale = Localizations.localeOf(context).toString();
+    final l10n = AppLocalizations.of(context)!;
+    final addictionName = selectedAddiction?.name ?? 'Dopamine';
 
     final timeComponents = {
       'days': duration.inDays,
@@ -273,11 +275,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             itemBuilder: (BuildContext context) => [
               PopupMenuItem(
                 value: 'config',
-                child: Text(AppLocalizations.of(context)!.homeMenuConfig),
+                child: Text(l10n.homeMenuConfig),
               ),
               PopupMenuItem(
                 value: 'about',
-                child: Text(AppLocalizations.of(context)!.homeMenuAbout),
+                child: Text(l10n.homeMenuAbout),
               ),
             ],
           ),
@@ -296,7 +298,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             Text(
               selectedAddiction != null 
                 ? "Stai tracciando: ${selectedAddiction!.name}"
-                : AppLocalizations.of(context)!.homeTagline,
+                : l10n.homeTagline,
               style: TextStyle(
                 fontSize: 16,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -314,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      AppLocalizations.of(context)!.homeSinceLastTitle,
+                      l10n.homeSinceLastTitle(addictionName),
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.w600),
                     ),
@@ -351,15 +353,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     icon: Icons.check_circle,
                     color: colorScheme.primaryContainer.withOpacity(0.5),
                     text:
-                        AppLocalizations.of(context)!.homeCigarettesAvoidedText(
+                        l10n.homeCigarettesAvoidedText(
                       triggersAvoided.toString(),
+                      addictionName,
                     ),
                     availableWidth: itemWidth,
                   ),
                   _buildStatCard(
                     icon: Icons.star,
                     color: colorScheme.secondaryContainer.withOpacity(0.5),
-                    text: AppLocalizations.of(context)!.homeMoneySavedText(
+                    text: l10n.homeMoneySavedText(
                       benefitScore.toStringAsFixed(1),
                     ),
                     availableWidth: itemWidth,
@@ -367,16 +370,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   _buildStatCard(
                     icon: Icons.bolt,
                     color: colorScheme.tertiaryContainer.withOpacity(0.5),
-                    text: AppLocalizations.of(context)!.homeSmokedTodayText(
+                    text: l10n.homeSmokedTodayText(
                       triggersLoggedToday.toString(),
+                      addictionName,
                     ),
                     availableWidth: itemWidth,
                   ),
                   _buildStatCard(
                     icon: Icons.access_time,
                     color: colorScheme.errorContainer.withOpacity(0.5),
-                    text: AppLocalizations.of(context)!.homeHoursWithoutSmokingText(
+                    text: l10n.homeHoursWithoutSmokingText(
                       hoursWithoutTriggers.toString(),
+                      addictionName,
                     ),
                     availableWidth: itemWidth,
                   ),
@@ -401,7 +406,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             ),
                             onPressed: _logTrigger,
                             label: Text(
-                              AppLocalizations.of(context)!.homeLogCigaretteButton,
+                              l10n.homeLogCigaretteButton(addictionName),
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.primary,
                                 fontSize: 20,
