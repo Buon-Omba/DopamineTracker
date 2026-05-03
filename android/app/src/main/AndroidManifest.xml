@@ -40,6 +40,14 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="it.buonomba.DopamineTracker.WidgetConfigActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <!-- Obbligatorio per Android 14 per far capire al sistema che l'app gestisce dati salute -->
         <activity-alias
             android:name="ViewPermissionUsageActivity"
@@ -61,6 +69,7 @@
         <receiver android:name=".HomeWidgetProvider" android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="it.buonomba.DopamineTracker.action.LOG_TRIGGER" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"

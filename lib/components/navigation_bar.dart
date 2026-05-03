@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dopamine_tracker/screens/home_screen.dart';
 import 'package:dopamine_tracker/screens/calendar_screen.dart';
-import 'package:dopamine_tracker/screens/health_screen.dart';
 import 'package:dopamine_tracker/screens/stats_screen.dart';
-import 'package:dopamine_tracker/screens/daily_log_screen.dart';
 import 'package:dopamine_tracker/l10n/app_localizations.dart';
 
 class CustomNavigationBar extends StatelessWidget {
@@ -21,15 +19,9 @@ class CustomNavigationBar extends StatelessWidget {
           targetScreen = HomeScreen(setThemeMode: setThemeMode);
           break;
         case 1:
-          targetScreen = HealthScreen(setThemeMode: setThemeMode);
-          break;
-        case 2:
           targetScreen = CalendarScreen(setThemeMode: setThemeMode);
           break;
-        case 3:
-          targetScreen = DailyLogScreen(setThemeMode: setThemeMode);
-          break;
-        case 4:
+        case 2:
           targetScreen = StatsScreen(setThemeMode: setThemeMode);
           break;
         default:
@@ -84,16 +76,8 @@ class CustomNavigationBar extends StatelessWidget {
           label: l10n.navigationBarHome,
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.health_and_safety),
-          label: l10n.navigationBarHealthGoals,
-        ),
-        BottomNavigationBarItem(
           icon: const Icon(Icons.calendar_month),
           label: l10n.navigationBarCalendar,
-        ),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.edit_calendar),
-          label: l10n.navigationBarDailyLog,
         ),
         BottomNavigationBarItem(
           icon: const Icon(Icons.bar_chart),

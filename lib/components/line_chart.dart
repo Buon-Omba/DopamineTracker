@@ -162,8 +162,9 @@ class _MultiLineChartPainter extends CustomPainter {
 
       // Handle cases where min == max to avoid division by zero
       if (min == max) {
-        if (min > 0) min = 0;
-        else if (min < 0) max = 0;
+        if (min > 0) {
+          min = 0;
+        } else if (min < 0) max = 0;
         else max = 1;
       }
 

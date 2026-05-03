@@ -101,12 +101,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String configOptionPacketsPerWeekText(String trigger) {
-    return 'Average $trigger used';
+    return '$trigger per portion';
   }
 
   @override
   String configOptionCigarettesPerPacketText(String trigger) {
-    return 'Average daily $trigger used';
+    return 'Average daily $trigger';
   }
 
   @override
@@ -378,7 +378,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeQuickActionsTitle => 'Quick actions';
 
   @override
-  String homeSmokedTodayText(String cigarettesSmoked, Object trigger) {
+  String homeSmokedTodayText(String cigarettesSmoked, String trigger) {
     return '${trigger}s used today: \n $cigarettesSmoked';
   }
 
@@ -423,7 +423,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String logScreenSelectedDayText(String count, String date, String trigger) {
-    return '$count ${trigger}s on $date';
+    return '$count ${trigger}s $date';
   }
 
   @override
@@ -459,7 +459,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String logEditCountLabel(String date, String trigger) {
-    return '${trigger}s on $date';
+    return '${trigger}s $date';
   }
 
   @override

@@ -14,16 +14,40 @@
   "save": "Salva",
   "@save": {},
 
-  "aboutScreenTitle": "Informazioni su Dopamine Tracker",
-  "@aboutScreenTitle": {},
-  "aboutDescriptionTitle": "Dopamine Tracker",
-  "@aboutDescriptionTitle": {},
-  "aboutDescriptionText": "Dopamine Tracker è un app open-source pensata per aiutarti a tracciare il tempo dall'ultimo stimolo di dopamina e vedere i progressi fatti. Calcola gli stimoli evitati e i benefici per la salute in base alle tue abitudini. Questa app è un fork di https://codeberg.org/retiolus/ExHale che aggiunge la funzionalità calendario.",
-  "@aboutDescriptionText": {},
+  "aboutScreenTitle": "Informazioni su {trigger} Tracker",
+  "@aboutScreenTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutDescriptionTitle": "{trigger} Tracker",
+  "@aboutDescriptionTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutDescriptionText": "{trigger} Tracker è un app open-source pensata per aiutarti a tracciare il tempo dall'ultimo {trigger} e vedere i progressi fatti. Calcola gli stimoli evitati e i benefici per la salute in base alle tue abitudini. Questa app è un fork di https://codeberg.org/retiolus/ExHale che aggiunge la funzionalità calendario.",
+  "@aboutDescriptionText": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "aboutPrivacyTitle": "Privacy e Open Source",
   "@aboutPrivacyTitle": {},
-  "aboutPrivacyText": "Dopamine Tracker rispetta la tua privacy. Non traccia i tuoi dati e tutte le tue informazioni sono memorizzate localmente sul tuo dispositivo. Il codice sorgente è disponibile per la revisione, garantendo completa trasparenza.",
-  "@aboutPrivacyText": {},
+  "aboutPrivacyText": "{trigger} Tracker rispetta la tua privacy. Non traccia i tuoi dati e tutte le tue informazioni sono memorizzate localmente sul tuo dispositivo. Il codice sorgente è disponibile per la revisione, garantendo completa trasparenza.",
+  "@aboutPrivacyText": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "aboutLinksTitle": "Collegamenti",
   "@aboutLinksTitle": {},
   "aboutLinksViewSourceCode": "Visualizza Codice Sorgente",
@@ -34,11 +58,11 @@
   "@aboutCreditsTitle": {},
   "aboutCreditsText": "L'icona dell'app è fornita da OpenMoji - un progetto emoji open-source. Grazie a OpenMoji per il loro fantastico lavoro!",
   "@aboutCreditsText": {},
-  "aboutCreditsOpenMoji": "Visita OpenMoji",
+  "aboutCreditsOpenMoji": " ",
   "@aboutCreditsOpenMoji": {},
   "aboutCreditsMyWebsite": "Sito di Retiolus. Lo ringrazio infinitamente per la base di questa app.",
   "@aboutCreditsMyWebsite": {},
-  "aboutCreditsLiberapay": "Supportami su Liberapay",
+  "aboutCreditsLiberapay": " ",
   "@aboutCreditsLiberapay": {},
 
   "configSnackBarValidNumber": "Inserisci numeri validi prima di salvare.",
@@ -53,10 +77,22 @@
   "@configScreenTitle": {},
   "configOptionEnableFriendsText": "Abilita Amici",
   "@configOptionEnableFriendsText": {},
-  "configOptionPacketsPerWeekText": "Media occorrenze settimanali",
-  "@configOptionPacketsPerWeekText": {},
-  "configOptionCigarettesPerPacketText": "Intensità media giornaliera",
-  "@configOptionCigarettesPerPacketText": {},
+  "configOptionPacketsPerWeekText": "{trigger} per porzione",
+  "@configOptionPacketsPerWeekText": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "configOptionCigarettesPerPacketText": "Media giornaliera {trigger}",
+  "@configOptionCigarettesPerPacketText": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "configOptionCounterStartDateText": "Data di Inizio Contatore",
   "@configOptionCounterStartDateText": {},
   "configOptionCounterStartDateSelectText": "Seleziona una data",
@@ -83,8 +119,14 @@
   "@configExportErrorMessage": {},
   "configImportSuccessMessage": "Dati importati con successo. Riavvia l'app se necessario.",
   "@configImportSuccessMessage": {},
-  "configImportErrorMessage": "File non valido o corrotto. Usa un file di backup JSON di Dopamine Tracker.",
-  "@configImportErrorMessage": {},
+  "configImportErrorMessage": "File non valido o corrotto. Usa un file di backup JSON di {trigger} Tracker.",
+  "@configImportErrorMessage": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "configImportCancelled": "Importazione annullata.",
   "@configImportCancelled": {},
   "configDeleteAddictionTitle": "Elimina dipendenza",
@@ -132,28 +174,34 @@
   "@friendsScreenTitle": {},
   "friendsNoFriendsText": "Nessun amico ancora, aggiungine alcuni per vedere i loro progressi!",
   "@friendsNoFriendsText": {},
-  "friendsLastSmokedText": "Ultimo Reset: \n {lastSmoked}",
+  "friendsLastSmokedText": "Ultimo {trigger}: \n {lastSmoked}",
   "@friendsLastSmokedText": {
     "placeholders": {
-      "lastSmoked":{
+      "lastSmoked": {
         "type": "String",
         "example": "N/A"
+      },
+      "trigger": {
+        "type": "String"
       }
     }
   },
-  "friendsCigarettesAvoidedText": "Stimoli evitati: \n {cigAvoided}",
+  "friendsCigarettesAvoidedText": "{trigger} evitati: \n {cigAvoided}",
   "@friendsCigarettesAvoidedText": {
     "placeholders": {
-      "cigAvoided":{
+      "cigAvoided": {
         "type": "String",
         "example": "0"
+      },
+      "trigger": {
+        "type": "String"
       }
     }
   },
   "friendsMoneySavedText": "Punti beneficio: \n {moneySaved}",
   "@friendsMoneySavedText": {
     "placeholders": {
-      "moneySaved":{
+      "moneySaved": {
         "type": "String",
         "example": "0.0"
       }
@@ -162,7 +210,7 @@
   "friendsLastAnnouncedText": "Ultimo Annuncio: \n {lastAnnounced}",
   "@friendsLastAnnouncedText": {
     "placeholders": {
-      "lastAnnounced":{
+      "lastAnnounced": {
         "type": "String",
         "example": "N/D"
       }
@@ -177,34 +225,111 @@
   "friendsDialogEditFriendsNameTitle": "Modifica Nome Amico",
   "@friendsDialogEditFriendsNameTitle": {},
 
-  "health2DaysTitle": "2 giorni dopo il reset",
+  "health2DaysTitle": "2 giorni senza {trigger}",
+  "@health2DaysTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health2DaysText": "I recettori della dopamina iniziano a ri-sensibilizzarsi.",
 
-  "health3DaysTitle": "3 giorni dopo il reset",
+  "health3DaysTitle": "3 giorni senza {trigger}",
+  "@health3DaysTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health3DaysText": "La chiarezza mentale inizia a migliorare e la concentrazione aumenta.",
 
-  "health7DaysTitle": "7 giorni dopo il reset",
+  "health7DaysTitle": "7 giorni senza {trigger}",
+  "@health7DaysTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health7DaysText": "La stabilità dell'umore ritorna gradualmente.",
 
-  "health2WeeksTitle": "2 settimane dopo il reset",
+  "health2WeeksTitle": "2 settimane senza {trigger}",
+  "@health2WeeksTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health2WeeksText": "La qualità del sonno migliora.",
 
-  "health1MonthTitle": "1 mese dopo il reset",
+  "health1MonthTitle": "1 mese senza {trigger}",
+  "@health1MonthTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health1MonthText": "La forza di volontà diventa più forte.",
 
-  "health2MonthsTitle": "2 mesi e mezzo dopo il reset",
+  "health2MonthsTitle": "2 mesi e mezzo senza {trigger}",
+  "@health2MonthsTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health2MonthsText": "Ritorna la gioia naturale nelle attività semplici.",
 
-  "health3MonthsTitle": "3 mesi dopo il reset",
-  "health3MonthsText": "I livelli di dopamina sono quasi completamente tornati alla normalità.",
+  "health3MonthsTitle": "3 mesi senza {trigger}",
+  "@health3MonthsTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "health3MonthsText": "I livelli di {trigger} sono quasi completamente tornati alla normalità.",
+  "@health3MonthsText": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
 
-  "health1YearTitle": "1 anno dopo il reset",
+  "health1YearTitle": "1 anno senza {trigger}",
+  "@health1YearTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health1YearText": "I percorsi cerebrali si sono significativamente ricollegati.",
 
-  "health5YearsTitle": "5 anni dopo il reset",
+  "health5YearsTitle": "5 anni senza {trigger}",
+  "@health5YearsTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health5YearsText": "Benefici cognitivi sostenuti a lungo termine.",
 
-  "health15YearsTitle": "10-15 anni dopo il reset",
+  "health15YearsTitle": "10-15 anni senza {trigger}",
+  "@health15YearsTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "health15YearsText": "Massima resilienza mentale raggiunta.",
 
   "homeMenuConfig": "Impostazioni",
@@ -213,19 +338,22 @@
   "@homeMenuAbout": {},
   "homeSnackBarFriendsDisabled": "La schermata Amici è disabilitata nelle impostazioni.",
   "@homeSnackBarFriendsDisabled": {},
-  "homeCigarettesAvoidedText": "Stimoli evitati: \n {cigarettesAvoided}",
+  "homeCigarettesAvoidedText": "{trigger} evitati: \n {cigarettesAvoided}",
   "@homeCigarettesAvoidedText": {
     "placeholders": {
-      "cigarettesAvoided":{
+      "cigarettesAvoided": {
         "type": "String",
         "example": "0"
+      },
+      "trigger": {
+        "type": "String"
       }
     }
   },
   "homeMoneySavedText": "Punteggio benefici: \n {moneySaved}",
   "@homeMoneySavedText": {
     "placeholders": {
-      "moneySaved":{
+      "moneySaved": {
         "type": "String",
         "example": "0.0"
       }
@@ -235,8 +363,14 @@
   "@homeRestartProgressText": {},
   "homeTagline": "Traccia, registra e resta costante.",
   "@homeTagline": {},
-  "homeSinceLastTitle": "Tempo dall'ultimo reset",
-  "@homeSinceLastTitle": {},
+  "homeSinceLastTitle": "Tempo dall'ultimo {trigger}",
+  "@homeSinceLastTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "homeLastSmokedLabel": "Ultima registrazione: {date}",
   "@homeLastSmokedLabel": {
     "placeholders": {
@@ -250,42 +384,78 @@
   "@homeNotStartedYet": {},
   "homeQuickActionsTitle": "Azioni rapide",
   "@homeQuickActionsTitle": {},
-  "homeSmokedTodayText": "Reset oggi: \n {cigarettesSmoked}",
+  "homeSmokedTodayText": "{trigger} oggi: \n {cigarettesSmoked}",
   "@homeSmokedTodayText": {
     "placeholders": {
       "cigarettesSmoked": {
         "type": "String",
         "example": "0"
+      },
+      "trigger": {
+        "type": "String"
       }
     }
   },
-  "homeHoursWithoutSmokingText": "Ore senza stimoli: \n {hours}",
+  "homeHoursWithoutSmokingText": "Ore senza {trigger}: \n {hours}",
   "@homeHoursWithoutSmokingText": {
     "placeholders": {
       "hours": {
         "type": "String",
         "example": "0"
+      },
+      "trigger": {
+        "type": "String"
       }
     }
   },
-  "homeLogCigaretteButton": "Registra un reset",
-  "@homeLogCigaretteButton": {},
+  "homeLogCigaretteButton": "Registra un {trigger}",
+  "@homeLogCigaretteButton": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "homeViewCalendarLogButton": "Calendario",
   "@homeViewCalendarLogButton": {},
-  "homeSnackBarCigaretteLogged": "Reset registrato per oggi.",
-  "@homeSnackBarCigaretteLogged": {},
+  "homeSnackBarCigaretteLogged": "{trigger} registrato per oggi.",
+  "@homeSnackBarCigaretteLogged": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
 
-  "logScreenTitle": "Registro Dopamina",
-  "@logScreenTitle": {},
+  "logScreenTitle": "Registro {trigger}",
+  "@logScreenTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "logScreenToday": "Oggi",
   "@logScreenToday": {},
-  "logScreenCigaretteSingular": "reset",
-  "@logScreenCigaretteSingular": {},
-  "logScreenCigarettePlural": "reset",
-  "@logScreenCigarettePlural": {},
+  "logScreenCigaretteSingular": "{trigger}",
+  "@logScreenCigaretteSingular": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "logScreenCigarettePlural": "{trigger}",
+  "@logScreenCigarettePlural": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "logScreenSelectedDayHeader": "Giorno selezionato",
   "@logScreenSelectedDayHeader": {},
-  "logScreenSelectedDayText": "{count} reset il {date}",
+  "logScreenSelectedDayText": "{count} {trigger} {date}",
   "@logScreenSelectedDayText": {
     "placeholders": {
       "count": {
@@ -295,13 +465,28 @@
       "date": {
         "type": "String",
         "example": "1 gen 2024"
+      },
+      "trigger": {
+        "type": "String"
       }
     }
   },
-  "logScreenEmptyHint": "Nessuna voce ancora. Registra ogni reset per costruire il tuo calendario.",
-  "@logScreenEmptyHint": {},
-  "logScreenChartTitle": "Reset registrati",
-  "@logScreenChartTitle": {},
+  "logScreenEmptyHint": "Nessuna voce ancora. Registra ogni {trigger} per costruire il tuo calendario.",
+  "@logScreenEmptyHint": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "logScreenChartTitle": "{trigger} registrati",
+  "@logScreenChartTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
   "logScreenRange7d": "7 giorni",
   "@logScreenRange7d": {},
   "logScreenRange14d": "14 giorni",
@@ -316,12 +501,15 @@
   "@logScreenChartEmpty": {},
   "logEditTitle": "Modifica voce",
   "@logEditTitle": {},
-  "logEditCountLabel": "Reset il {date}",
+  "logEditCountLabel": "{trigger} {date}",
   "@logEditCountLabel": {
     "placeholders": {
       "date": {
         "type": "String",
         "example": "1 gen 2024"
+      },
+      "trigger": {
+        "type": "String"
       }
     }
   },
@@ -334,7 +522,14 @@
   "navigationBarCalendar": "Calendario",
   "@navigationBarCalendar": {},
 
-  "healthScreenNoCigarettesYetTitle": "Traguardi - Registra il tuo primo reset",
+  "healthScreenNoCigarettesYetTitle": "Traguardi - Registra il tuo primo {trigger}",
+  "@healthScreenNoCigarettesYetTitle": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
 
   "statsScreenTitle": "Statistiche Salute",
   "statsHeartRateTitle": "Battito Cardiaco (Media 7gg)",
@@ -352,7 +547,7 @@
 
   "moodCalm": "Calma",
   "moodHappy": "Felice",
-  "moodEnergetic": "Energetica",
+  "moodEnergetic": "Energgetica",
   "moodLively": "Vivace",
   "moodMoodSwings": "Sbalzi di umore",
   "moodIrritated": "Irritata",

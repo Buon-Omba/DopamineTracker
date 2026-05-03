@@ -128,7 +128,7 @@ class _StatsScreenState extends State<StatsScreen> {
         title: Text(localizations.statsScreenTitle),
       ),
       bottomNavigationBar: CustomNavigationBar(
-          currentIndex: 4,
+          currentIndex: 2,
           setThemeMode: widget.setThemeMode
       ),
       body: _isLoading
@@ -169,20 +169,8 @@ class _StatsScreenState extends State<StatsScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    _buildSectionTitle("Mood Score (7d)"),
-                    _buildChartContainer(
-                      LineChart(
-                        datasets: [
-                          LineChartData(
-                            entries: _getLast7DaysEntries((date) => (_dailyEntries[date]?.totalScore ?? 0).toDouble()),
-                            color: Colors.red,
-                            minValue: -30,
-                            maxValue: 30,
-                          ),
-                        ],
-                        emptyLabel: localizations.logScreenChartEmpty,
-                      ),
-                    ),
+                    _buildSectionTitle("Recent Activity (7d)"),
+                    _buildRecentActivitySection(localizations),
                     const SizedBox(height: 24),
 
                     if (!_isAuthorized)
@@ -265,5 +253,114 @@ class _StatsScreenState extends State<StatsScreen> {
         value: getValue(date),
       );
     });
+  }
+
+  Widget _buildRecentActivitySection(AppLocalizations l10n) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final days = List.generate(7, (index) => today.subtract(Duration(days: index)));
+
+    return Column(
+      children: days.map((date) {
+        final entry = _dailyEntries[date];
+        if (entry == null || (entry.moods.isEmpty && entry.activities.isEmpty && entry.others.isEmpty)) {
+          return const SizedBox.shrink();
+        }
+
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  DateFormat.MMMEd(Localizations.localeOf(context).toString()).format(date),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                const SizedBox(height: 8),
+                if (entry.moods.isNotEmpty)
+                  _buildActivityRow(Icons.sentiment_satisfied, Colors.orange, 
+                    entry.moods.map((m) => "${DailyLogService.moodEmojis[m]} ${_getMoodLabel(m, context)}").join(", ")),
+                if (entry.activities.isNotEmpty)
+                  _buildActivityRow(Icons.directions_run, Colors.green, 
+                    entry.activities.map((a) => "${DailyLogService.activityEmojis[a]} ${_getActivityLabel(a, context)}").join(", ")),
+                if (entry.others.isNotEmpty)
+                  _buildActivityRow(Icons.more_horiz, Colors.blue, 
+                    entry.others.map((o) => "${DailyLogService.otherEmojis[o]} ${_getOtherLabel(o, context)}").join(", ")),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildActivityRow(IconData icon, Color color, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text, style: const TextStyle(fontSize: 17))),
+        ],
+      ),
+    );
+  }
+
+  String _getMoodLabel(String moodKey, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (moodKey) {
+      case 'calm': return l10n.moodCalm;
+      case 'happy': return l10n.moodHappy;
+      case 'energetic': return l10n.moodEnergetic;
+      case 'lively': return l10n.moodLively;
+      case 'mood_swings': return l10n.moodMoodSwings;
+      case 'irritated': return l10n.moodIrritated;
+      case 'sad': return l10n.moodSad;
+      case 'anxious': return l10n.moodAnxious;
+      case 'depressed': return l10n.moodDepressed;
+      case 'guilt': return l10n.moodGuilt;
+      case 'obsessive': return l10n.moodObsessiveThoughts;
+      case 'low_energy': return l10n.moodLowEnergy;
+      case 'apathetic': return l10n.moodApathetic;
+      case 'confused': return l10n.moodConfused;
+      case 'self_critical': return l10n.moodSelfCritical;
+      default: return moodKey;
+    }
+  }
+
+  String _getActivityLabel(String activityKey, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (activityKey) {
+      case 'none': return l10n.activityNone;
+      case 'yoga': return l10n.activityYoga;
+      case 'gym': return l10n.activityGym;
+      case 'aerobics': return l10n.activityAerobics;
+      case 'swimming': return l10n.activitySwimming;
+      case 'team_sports': return l10n.activityTeamSports;
+      case 'running': return l10n.activityRunning;
+      case 'cycling': return l10n.activityCycling;
+      case 'walking': return l10n.activityWalking;
+      default: return activityKey;
+    }
+  }
+
+  String _getOtherLabel(String otherKey, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (otherKey) {
+      case 'travel': return l10n.otherTravel;
+      case 'stress': return l10n.otherStress;
+      case 'meditation': return l10n.otherMeditation;
+      case 'journaling': return l10n.otherJournaling;
+      case 'kegel': return l10n.otherKegel;
+      case 'breathing': return l10n.otherBreathing;
+      case 'illness': return l10n.otherIllness;
+      case 'alcohol': return l10n.otherAlcohol;
+      default: return otherKey;
+    }
   }
 }

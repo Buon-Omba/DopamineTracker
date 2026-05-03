@@ -257,13 +257,13 @@ abstract class AppLocalizations {
   /// No description provided for @configOptionPacketsPerWeekText.
   ///
   /// In en, this message translates to:
-  /// **'Average {trigger} used'**
+  /// **'{trigger} per portion'**
   String configOptionPacketsPerWeekText(String trigger);
 
   /// No description provided for @configOptionCigarettesPerPacketText.
   ///
   /// In en, this message translates to:
-  /// **'Average daily {trigger} used'**
+  /// **'Average daily {trigger}'**
   String configOptionCigarettesPerPacketText(String trigger);
 
   /// No description provided for @configOptionCounterStartDateText.
@@ -702,7 +702,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{trigger}s used today: \n {cigarettesSmoked}'**
-  String homeSmokedTodayText(String cigarettesSmoked, Object trigger);
+  String homeSmokedTodayText(String cigarettesSmoked, String trigger);
 
   /// No description provided for @homeHoursWithoutSmokingText.
   ///
@@ -761,7 +761,7 @@ abstract class AppLocalizations {
   /// No description provided for @logScreenSelectedDayText.
   ///
   /// In en, this message translates to:
-  /// **'{count} {trigger}s on {date}'**
+  /// **'{count} {trigger}s {date}'**
   String logScreenSelectedDayText(String count, String date, String trigger);
 
   /// No description provided for @logScreenEmptyHint.
@@ -821,7 +821,7 @@ abstract class AppLocalizations {
   /// No description provided for @logEditCountLabel.
   ///
   /// In en, this message translates to:
-  /// **'{trigger}s on {date}'**
+  /// **'{trigger}s {date}'**
   String logEditCountLabel(String date, String trigger);
 
   /// No description provided for @navigationFriendsDisabled.

@@ -54,6 +54,7 @@ class DopamineLogService {
     addictions.add(Addiction(id: id, name: formattedName));
     await prefs.setString(_addictionsKey, jsonEncode(addictions.map((e) => e.toJson()).toList()));
     await prefs.setBool(_hasStartedKey, true);
+    await DopamineTrackerApp.updateHomeWidgets(); 
   }
 
   static Future<void> removeAddiction(String id) async {
@@ -63,6 +64,7 @@ class DopamineLogService {
     await prefs.setString(_addictionsKey, jsonEncode(addictions.map((e) => e.toJson()).toList()));
     await prefs.remove(_logKeyPrefix + id);
     await prefs.remove(_lastTriggerKeyPrefix + id);
+    await DopamineTrackerApp.updateHomeWidgets();
   }
 
   static Future<void> logTrigger(String addictionId, {DateTime? timestamp}) async {

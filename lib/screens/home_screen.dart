@@ -10,6 +10,7 @@ import 'about_screen.dart';
 import 'package:dopamine_tracker/l10n/app_localizations.dart';
 import '../components/navigation_bar.dart';
 import '../services/smoke_log_service.dart';
+import '../services/daily_log_service.dart';
 import '../widget_provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -35,6 +36,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   int triggersAvoided = 0;
   int triggersLoggedToday = 0;
   int hoursWithoutTriggers = 0;
+
+  DailyLogEntry _currentDailyEntry = DailyLogEntry();
 
   late Timer timer;
 
@@ -79,6 +82,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     await _loadAddictions();
     await _loadConfigData();
     await _loadSelectedAddictionData();
+    await _loadTodayDailyLog();
     _updateCalculations();
   }
 
@@ -104,6 +108,66 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       lastTrigger = last;
       triggersLoggedToday = count;
       isFirstTime = last == null;
+    });
+  }
+
+  Future<void> _loadTodayDailyLog() async {
+    final entry = await DailyLogService.getEntry(DateTime.now());
+    if (!mounted) return;
+    setState(() {
+      _currentDailyEntry = entry ?? DailyLogEntry();
+    });
+  }
+
+  Future<void> _toggleMood(String moodKey) async {
+    List<String> moods = List.from(_currentDailyEntry.moods);
+    if (moods.contains(moodKey)) {
+      moods.remove(moodKey);
+    } else {
+      moods.add(moodKey);
+    }
+    
+    final updatedEntry = _currentDailyEntry.copyWith(moods: moods);
+    await DailyLogService.saveEntry(DateTime.now(), updatedEntry);
+    
+    if (!mounted) return;
+    setState(() {
+      _currentDailyEntry = updatedEntry;
+    });
+  }
+
+  Future<void> _toggleItem(String category, String itemKey) async {
+    List<String> newList;
+    DailyLogEntry updatedEntry;
+
+    switch (category) {
+      case 'activities':
+        newList = List.from(_currentDailyEntry.activities);
+        if (newList.contains(itemKey)) {
+          newList.remove(itemKey);
+        } else {
+          newList.add(itemKey);
+        }
+        updatedEntry = _currentDailyEntry.copyWith(activities: newList);
+        break;
+      case 'others':
+        newList = List.from(_currentDailyEntry.others);
+        if (newList.contains(itemKey)) {
+          newList.remove(itemKey);
+        } else {
+          newList.add(itemKey);
+        }
+        updatedEntry = _currentDailyEntry.copyWith(others: newList);
+        break;
+      default:
+        return;
+    }
+
+    await DailyLogService.saveEntry(DateTime.now(), updatedEntry);
+
+    if (!mounted) return;
+    setState(() {
+      _currentDailyEntry = updatedEntry;
     });
   }
 
@@ -341,32 +405,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             const SizedBox(height: 16),
             LayoutBuilder(
               builder: (context, constraints) {
-                final isWide = constraints.maxWidth > 600;
-                final columnCount = isWide ? 3 : 2;
+                final columnCount = 2;
                 final itemWidth =
                     (constraints.maxWidth - (12 * (columnCount - 1))) /
                         columnCount;
 
                 final colorScheme = Theme.of(context).colorScheme;
                 final items = [
-                  _buildStatCard(
-                    icon: Icons.check_circle,
-                    color: colorScheme.primaryContainer.withOpacity(0.5),
-                    text:
-                        l10n.homeCigarettesAvoidedText(
-                      triggersAvoided.toString(),
-                      addictionName,
-                    ),
-                    availableWidth: itemWidth,
-                  ),
-                  _buildStatCard(
-                    icon: Icons.star,
-                    color: colorScheme.secondaryContainer.withOpacity(0.5),
-                    text: l10n.homeMoneySavedText(
-                      benefitScore.toStringAsFixed(1),
-                    ),
-                    availableWidth: itemWidth,
-                  ),
                   _buildStatCard(
                     icon: Icons.bolt,
                     color: colorScheme.tertiaryContainer.withOpacity(0.5),
@@ -395,7 +440,82 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               },
             ),
             const SizedBox(height: 16),
-                    const SizedBox(height: 20),
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.dailyLogCategoryMood,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: DailyLogService.moodEmojis.keys.map((moodKey) {
+                        final isSelected = _currentDailyEntry.moods.contains(moodKey);
+                        return FilterChip(
+                          avatar: Text(DailyLogService.moodEmojis[moodKey]!),
+                          label: Text(_getMoodLabel(moodKey, context)),
+                          selected: isSelected,
+                          onSelected: (_) => _toggleMood(moodKey),
+                          selectedColor: Colors.orange.withOpacity(0.3),
+                          checkmarkColor: Colors.orange,
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      l10n.dailyLogCategoryActivity,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: DailyLogService.activityEmojis.keys.map((activityKey) {
+                        final isSelected = _currentDailyEntry.activities.contains(activityKey);
+                        return FilterChip(
+                          avatar: Text(DailyLogService.activityEmojis[activityKey]!),
+                          label: Text(_getActivityLabel(activityKey, context)),
+                          selected: isSelected,
+                          onSelected: (_) => _toggleItem('activities', activityKey),
+                          selectedColor: Colors.green.withOpacity(0.3),
+                          checkmarkColor: Colors.green,
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      l10n.dailyLogCategoryOther,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: DailyLogService.otherEmojis.keys.map((otherKey) {
+                        final isSelected = _currentDailyEntry.others.contains(otherKey);
+                        return FilterChip(
+                          avatar: Text(DailyLogService.otherEmojis[otherKey]!),
+                          label: Text(_getOtherLabel(otherKey, context)),
+                          selected: isSelected,
+                          onSelected: (_) => _toggleItem('others', otherKey),
+                          selectedColor: Colors.blue.withOpacity(0.3),
+                          checkmarkColor: Colors.blue,
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -488,5 +608,42 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ),
       ),
     );
+  }
+
+  String _getMoodLabel(String moodKey, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (moodKey) {
+      case 'calm': return l10n.moodCalm;
+      case 'happy': return l10n.moodHappy;
+      case 'energetic': return l10n.moodEnergetic;
+      case 'irritated': return l10n.moodIrritated;
+      case 'sad': return l10n.moodSad;
+      case 'anxious': return l10n.moodAnxious;
+      case 'depressed': return l10n.moodDepressed;
+      case 'low_energy': return l10n.moodLowEnergy;
+      case 'apathetic': return l10n.moodApathetic;
+      default: return moodKey;
+    }
+  }
+
+  String _getActivityLabel(String activityKey, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (activityKey) {
+      case 'none': return l10n.activityNone;
+      case 'gym': return l10n.activityGym;
+      case 'swimming': return l10n.activitySwimming;
+      case 'running': return l10n.activityRunning;
+      default: return activityKey;
+    }
+  }
+
+  String _getOtherLabel(String otherKey, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (otherKey) {
+      case 'travel': return l10n.otherTravel;
+      case 'stress': return l10n.otherStress;
+      case 'illness': return l10n.otherIllness;
+      default: return otherKey;
+    }
   }
 }

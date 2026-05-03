@@ -77,7 +77,7 @@
   "@configScreenTitle": {},
   "configOptionEnableFriendsText": "Enable Friends",
   "@configOptionEnableFriendsText": {},
-  "configOptionPacketsPerWeekText": "Average {trigger} used",
+  "configOptionPacketsPerWeekText": "{trigger} per portion",
   "@configOptionPacketsPerWeekText": {
     "placeholders": {
       "trigger": {
@@ -85,7 +85,7 @@
       }
     }
   },
-  "configOptionCigarettesPerPacketText": "Average daily {trigger} used",
+  "configOptionCigarettesPerPacketText": "Average daily {trigger}",
   "@configOptionCigarettesPerPacketText": {
     "placeholders": {
       "trigger": {
@@ -397,6 +397,9 @@
       "cigarettesSmoked": {
         "type": "String",
         "example": "0"
+      },
+      "trigger": {
+        "type": "String"
       }
     }
   },
@@ -459,7 +462,7 @@
   },
   "logScreenSelectedDayHeader": "Selected Day",
   "@logScreenSelectedDayHeader": {},
-  "logScreenSelectedDayText": "{count} {trigger}s on {date}",
+  "logScreenSelectedDayText": "{count} {trigger}s {date}",
   "@logScreenSelectedDayText": {
     "placeholders": {
       "count": {
@@ -505,7 +508,7 @@
   "@logScreenChartEmpty": {},
   "logEditTitle": "Edit entry",
   "@logEditTitle": {},
-  "logEditCountLabel": "{trigger}s on {date}",
+  "logEditCountLabel": "{trigger}s {date}",
   "@logEditCountLabel": {
     "placeholders": {
       "date": {

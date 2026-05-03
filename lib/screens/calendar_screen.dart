@@ -600,33 +600,33 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 ),
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.grey.shade700,
+                              //color: Colors.grey.shade700,
                             ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(
-                          (_selectedDayScore ?? 0) >= 0 ? Icons.sentiment_satisfied_alt : Icons.sentiment_dissatisfied,
-                          color: (_selectedDayScore ?? 0) >= 0 ? Colors.green : Colors.red,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            l10n.logDailyScore((_selectedDayScore ?? 0).toString()),
-                            style: TextStyle(
-                              fontSize: 16,
-                             // fontWeight: FontWeight.bold,
-                            //  color: (_selectedDayScore ?? 0) >= 0 ? Colors.green.shade700 : Colors.red.shade700,
+                    if (_dailyEntries[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)]?.moods.isNotEmpty ?? false)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.sentiment_satisfied_alt, color: Colors.red, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _dailyEntries[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)]!
+                                    .moods
+                                    .map((m) => "${DailyLogService.moodEmojis[m]} ${_getMoodLabel(m, context)}")
+                                    .join(", "),
+                                style: const TextStyle(fontSize: 16),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -748,3 +748,25 @@ class _LegendItem extends StatelessWidget {
 }
 
 enum _EditResult { save, delete }
+
+String _getMoodLabel(String moodKey, BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
+  switch (moodKey) {
+    case 'calm': return l10n.moodCalm;
+    case 'happy': return l10n.moodHappy;
+    case 'energetic': return l10n.moodEnergetic;
+    case 'lively': return l10n.moodLively;
+    case 'mood_swings': return l10n.moodMoodSwings;
+    case 'irritated': return l10n.moodIrritated;
+    case 'sad': return l10n.moodSad;
+    case 'anxious': return l10n.moodAnxious;
+    case 'depressed': return l10n.moodDepressed;
+    case 'guilt': return l10n.moodGuilt;
+    case 'obsessive': return l10n.moodObsessiveThoughts;
+    case 'low_energy': return l10n.moodLowEnergy;
+    case 'apathetic': return l10n.moodApathetic;
+    case 'confused': return l10n.moodConfused;
+    case 'self_critical': return l10n.moodSelfCritical;
+    default: return moodKey;
+  }
+}

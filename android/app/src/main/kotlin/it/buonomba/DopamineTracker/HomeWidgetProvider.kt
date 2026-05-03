@@ -22,18 +22,30 @@ class HomeWidgetProvider : AppWidgetProvider() {
         }
     }
 
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        val prefs = context.getSharedPreferences("WidgetPrefs", Context.MODE_PRIVATE).edit()
+        for (appWidgetId in appWidgetIds) {
+            prefs.remove("widget_${appWidgetId}_id")
+            prefs.remove("widget_${appWidgetId}_name")
+        }
+        prefs.apply()
+    }
+
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         if (intent.action == ACTION_LOG_TRIGGER) {
-            logTriggerFromWidget(context)
+            val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
+            if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                logTriggerFromWidget(context, appWidgetId)
 
-            // Update all widgets
-            val appWidgetManager = AppWidgetManager.getInstance(context)
-            val appWidgetIds = appWidgetManager.getAppWidgetIds(
-                ComponentName(context, HomeWidgetProvider::class.java)
-            )
-            for (appWidgetId in appWidgetIds) {
-                updateAppWidget(context, appWidgetManager, appWidgetId)
+                // Update all widgets or just this one? Usually all to keep consistency if multiple widgets track same addiction
+                val appWidgetManager = AppWidgetManager.getInstance(context)
+                val appWidgetIds = appWidgetManager.getAppWidgetIds(
+                    ComponentName(context, HomeWidgetProvider::class.java)
+                )
+                for (id in appWidgetIds) {
+                    updateAppWidget(context, appWidgetManager, id)
+                }
             }
         }
     }
@@ -44,28 +56,37 @@ class HomeWidgetProvider : AppWidgetProvider() {
         fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
             val views = RemoteViews(context.packageName, R.layout.widget_layout)
 
+            val widgetPrefs = context.getSharedPreferences("WidgetPrefs", Context.MODE_PRIVATE)
+            val addictionId = widgetPrefs.getString("widget_${appWidgetId}_id", null)
+            val addictionName = widgetPrefs.getString("widget_${appWidgetId}_name", "Dopamine")
+
             val prefs: SharedPreferences = context.getSharedPreferences(
                 "FlutterSharedPreferences", Context.MODE_PRIVATE
             )
 
-            // --- Today's smoke count ---
-            val todayCount = getTodayCount(prefs)
+            // --- Today's count ---
+            val todayCount = if (addictionId != null) getTodayCount(prefs, addictionId) else 0
             views.setTextViewText(R.id.tv_smoked_today, todayCount.toString())
+            
+            // Update title with addiction name
+            views.setTextViewText(R.id.tv_widget_title, addictionName)
+            views.setTextViewText(R.id.tv_today_label, "OGGI")
 
-            // --- Log cigarette button ---
+            // --- Log button ---
             val intent = Intent(context, HomeWidgetProvider::class.java).apply {
                 action = ACTION_LOG_TRIGGER
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
             }
             val pendingIntent = PendingIntent.getBroadcast(
-                context, 0, intent,
+                context, appWidgetId, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            views.setOnClickPendingIntent(R.id.btn_log_cigarette, pendingIntent) // Il pulsante rimane lo stesso, solo l'azione cambia.
+            views.setOnClickPendingIntent(R.id.btn_log_cigarette, pendingIntent)
 
             // --- Open app on tap on the widget body ---
             val launchIntent = Intent(context, MainActivity::class.java)
             val launchPendingIntent = PendingIntent.getActivity(
-                context, 1, launchIntent,
+                context, appWidgetId + 1000, launchIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             views.setOnClickPendingIntent(R.id.widget_container, launchPendingIntent)
@@ -73,31 +94,37 @@ class HomeWidgetProvider : AppWidgetProvider() {
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
 
-        private fun getTodayCount(prefs: SharedPreferences): Int {
-            val smokeLogString = prefs.getString("flutter.smokeLog", null) ?: return 0
+        private fun getTodayCount(prefs: SharedPreferences, addictionId: String): Int {
+            val key = "flutter.dopamineLog_$addictionId"
+            val logString = prefs.getString(key, null) ?: return 0
             return try {
-                val smokeLog = JSONObject(smokeLogString)
+                val log = JSONObject(logString)
                 val calendar = Calendar.getInstance()
-                val year = calendar.get(Calendar.YEAR)
-                val month = calendar.get(Calendar.MONTH) + 1 // Month is 0-indexed
-                val day = calendar.get(Calendar.DAY_OF_MONTH)
-                val today = String.format(Locale.US, "%04d-%02d-%02d", year, month, day)
-                smokeLog.optInt(today, 0)
+                val today = String.format(Locale.US, "%04d-%02d-%02d", 
+                    calendar.get(Calendar.YEAR), 
+                    calendar.get(Calendar.MONTH) + 1, 
+                    calendar.get(Calendar.DAY_OF_MONTH))
+                log.optInt(today, 0)
             } catch (e: Exception) {
                 0
             }
         }
 
-        private fun logTriggerFromWidget(context: Context) {
+        private fun logTriggerFromWidget(context: Context, appWidgetId: Int) {
+            val widgetPrefs = context.getSharedPreferences("WidgetPrefs", Context.MODE_PRIVATE)
+            val addictionId = widgetPrefs.getString("widget_${appWidgetId}_id", null) ?: return
+
             val prefs: SharedPreferences = context.getSharedPreferences(
                 "FlutterSharedPreferences", Context.MODE_PRIVATE
             )
 
-            // Update smokeLog
-            val smokeLogString = prefs.getString("flutter.smokeLog", null)
-            val smokeLog = if (smokeLogString != null) {
+            val logKey = "flutter.dopamineLog_$addictionId"
+            val lastTriggerKey = "flutter.lastTrigger_$addictionId"
+
+            val logString = prefs.getString(logKey, null)
+            val log = if (logString != null) {
                 try {
-                    JSONObject(smokeLogString)
+                    JSONObject(logString)
                 } catch (e: Exception) {
                     JSONObject()
                 }
@@ -106,23 +133,21 @@ class HomeWidgetProvider : AppWidgetProvider() {
             }
 
             val calendar = Calendar.getInstance()
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH) + 1 // Month is 0-indexed
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-            val today = String.format(Locale.US, "%04d-%02d-%02d", year, month, day)
+            val today = String.format(Locale.US, "%04d-%02d-%02d", 
+                calendar.get(Calendar.YEAR), 
+                calendar.get(Calendar.MONTH) + 1, 
+                calendar.get(Calendar.DAY_OF_MONTH))
 
-            val currentCount = smokeLog.optInt(today, 0)
-            smokeLog.put(today, currentCount + 1)
+            val currentCount = log.optInt(today, 0)
+            log.put(today, currentCount + 1)
 
-            val editor = prefs.edit()
-            editor.putString("flutter.smokeLog", smokeLog.toString())
-
-            // Update lastSmoked timestamp
             val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.US).format(Date())
-            editor.putString("flutter.lastSmoked", now)
+            
+            val editor = prefs.edit()
+            editor.putString(logKey, log.toString())
+            editor.putString(lastTriggerKey, now)
             editor.putBoolean("flutter.hasStarted", true)
-
-            editor.apply()
+            editor.commit()
         }
     }
 }
