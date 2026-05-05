@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'smoke_log_service.dart';
 
 class DailyLogEntry {
   final List<String> moods;
@@ -60,6 +61,8 @@ class DailyLogEntry {
 
 class DailyLogService {
   static const _logKeyPrefix = 'dailyLog_';
+  static const _customItemsKeyPrefix = 'customDailyLogItems_';
+  static const _customEmojisKey = 'customDailyLogEmojis';
 
   static final Map<String, int> moodScores = {
     'calm': 3, 'happy': 5, 'energetic': 4, 'lively': 4, 'mood_swings': -3,
@@ -135,6 +138,7 @@ class DailyLogService {
     final updatedEntry = entry.copyWith(totalScore: calculateTotalScore(entry));
     
     await prefs.setString(key, jsonEncode(updatedEntry.toJson()));
+    DopamineLogService.notifyUpdate();
   }
 
   static Future<DailyLogEntry?> getEntry(DateTime date) async {
@@ -143,6 +147,61 @@ class DailyLogService {
     final stored = prefs.getString(key);
     if (stored == null) return null;
     return DailyLogEntry.fromJson(jsonDecode(stored));
+  }
+
+  static Future<void> addCustomItem(String category, String name) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = _customItemsKeyPrefix + category;
+    List<String> items = prefs.getStringList(key) ?? [];
+    if (!items.contains(name)) {
+      items.add(name);
+      await prefs.setStringList(key, items);
+    }
+  }
+
+  static Future<List<String>> getCustomItems(String category) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = _customItemsKeyPrefix + category;
+    return prefs.getStringList(key) ?? [];
+  }
+
+  static Future<void> setCustomEmoji(String name, String emoji) async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString(_customEmojisKey);
+    Map<String, dynamic> emojis = {};
+    if (stored != null) {
+      emojis = jsonDecode(stored);
+    }
+    emojis[name] = emoji;
+    await prefs.setString(_customEmojisKey, jsonEncode(emojis));
+  }
+
+  static Future<Map<String, String>> getCustomEmojis() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString(_customEmojisKey);
+    if (stored == null) return {};
+    final Map<String, dynamic> decoded = jsonDecode(stored);
+    return decoded.map((key, value) => MapEntry(key, value.toString()));
+  }
+
+  static Future<void> removeCustomItem(String category, String name) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = _customItemsKeyPrefix + category;
+    List<String> items = prefs.getStringList(key) ?? [];
+    if (items.contains(name)) {
+      items.remove(name);
+      await prefs.setStringList(key, items);
+      
+      // Also remove emoji mapping
+      final stored = prefs.getString(_customEmojisKey);
+      if (stored != null) {
+        Map<String, dynamic> emojis = jsonDecode(stored);
+        if (emojis.containsKey(name)) {
+          emojis.remove(name);
+          await prefs.setString(_customEmojisKey, jsonEncode(emojis));
+        }
+      }
+    }
   }
 
   static Future<Map<DateTime, DailyLogEntry>> loadAllEntries() async {

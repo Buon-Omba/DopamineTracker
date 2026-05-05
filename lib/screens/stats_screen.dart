@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../components/navigation_bar.dart';
 import '../components/line_chart.dart';
 import '../services/health_service.dart';
 import '../services/smoke_log_service.dart';
@@ -9,7 +9,8 @@ import 'package:dopamine_tracker/l10n/app_localizations.dart';
 
 class StatsScreen extends StatefulWidget {
   final Function(ThemeMode) setThemeMode;
-  const StatsScreen({super.key, required this.setThemeMode});
+  final Addiction? selectedAddiction;
+  const StatsScreen({super.key, required this.setThemeMode, this.selectedAddiction});
 
   @override
   _StatsScreenState createState() => _StatsScreenState();
@@ -18,31 +19,36 @@ class StatsScreen extends StatefulWidget {
 class _StatsScreenState extends State<StatsScreen> {
   final HealthService _healthService = HealthService();
   
-  List<Addiction> _addictions = [];
-  Addiction? _selectedAddiction;
-
   Map<DateTime, double> _heartRateData = {};
   Map<DateTime, double> _stressData = {};
   Map<DateTime, int> _triggerLog = {};
   Map<DateTime, DailyLogEntry> _dailyEntries = {};
+  Map<String, String> _customEmojis = {};
   bool _isLoading = true;
   bool _isAuthorized = false;
+  StreamSubscription? _updateSubscription;
 
   @override
   void initState() {
     super.initState();
-    _loadAddictionsAndCheckAuth();
+    _checkAuthorization();
+    _updateSubscription = DopamineLogService.updates.listen((_) {
+      _fetchData();
+    });
   }
 
-  Future<void> _loadAddictionsAndCheckAuth() async {
-    final list = await DopamineLogService.getAddictions();
-    setState(() {
-      _addictions = list;
-      if (_addictions.isNotEmpty && _selectedAddiction == null) {
-        _selectedAddiction = _addictions.first;
-      }
-    });
-    await _checkAuthorization();
+  @override
+  void didUpdateWidget(StatsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedAddiction != oldWidget.selectedAddiction) {
+      _fetchData();
+    }
+  }
+
+  @override
+  void dispose() {
+    _updateSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _checkAuthorization() async {
@@ -50,7 +56,7 @@ class _StatsScreenState extends State<StatsScreen> {
       _isLoading = true;
     });
 
-    bool alreadyAuthorized = await _healthService.authorize();
+    bool alreadyAuthorized = await _healthService.isAuthorized();
     if (alreadyAuthorized) {
       await _fetchData();
     } else {
@@ -63,17 +69,19 @@ class _StatsScreenState extends State<StatsScreen> {
   }
 
   Future<void> _fetchNonHealthData() async {
-    if (_selectedAddiction == null) return;
-    final triggers = await DopamineLogService.loadCalendarLog(_selectedAddiction!.id);
+    if (widget.selectedAddiction == null) return;
+    final triggers = await DopamineLogService.loadCalendarLog(widget.selectedAddiction!.id);
     final dailyEntries = await DailyLogService.loadAllEntries();
+    final customEmojis = await DailyLogService.getCustomEmojis();
     setState(() {
       _triggerLog = triggers;
       _dailyEntries = dailyEntries;
+      _customEmojis = customEmojis;
     });
   }
 
   Future<void> _fetchData() async {
-    if (_selectedAddiction == null) {
+    if (widget.selectedAddiction == null) {
        setState(() => _isLoading = false);
        return;
     }
@@ -83,14 +91,16 @@ class _StatsScreenState extends State<StatsScreen> {
     try {
       final hr = await _healthService.fetchDailyAverageHeartRate(days: 7);
       final stress = await _healthService.fetchDailyAverageStress(days: 7);
-      final triggers = await DopamineLogService.loadCalendarLog(_selectedAddiction!.id);
+      final triggers = await DopamineLogService.loadCalendarLog(widget.selectedAddiction!.id);
       final dailyEntries = await DailyLogService.loadAllEntries();
+      final customEmojis = await DailyLogService.getCustomEmojis();
 
       setState(() {
         _heartRateData = hr;
         _stressData = stress;
         _triggerLog = triggers;
         _dailyEntries = dailyEntries;
+        _customEmojis = customEmojis;
         _isAuthorized = true;
         _isLoading = false;
       });
@@ -123,45 +133,54 @@ class _StatsScreenState extends State<StatsScreen> {
     final localizations = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(localizations.statsScreenTitle),
-      ),
-      bottomNavigationBar: CustomNavigationBar(
-          currentIndex: 2,
-          setThemeMode: widget.setThemeMode
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _fetchData,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (_addictions.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 16.0),
-                        child: DropdownButton<Addiction>(
-                          value: _selectedAddiction,
-                          isExpanded: true,
-                          items: _addictions.map((a) => DropdownMenuItem(value: a, child: Text(a.name))).toList(),
-                          onChanged: (val) {
-                            setState(() => _selectedAddiction = val);
-                            _fetchData();
-                          },
+    return _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : RefreshIndicator(
+            onRefresh: _fetchData,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionTitle("${widget.selectedAddiction?.name ?? 'Dopamine'} Triggers (7d)"),
+                  _buildChartContainer(
+                    LineChart(
+                      datasets: [
+                        LineChartData(
+                          entries: _getLast7DaysEntries((date) => (_triggerLog[date] ?? 0).toDouble()),
+                          color: colorScheme.primary,
+                        ),
+                      ],
+                      emptyLabel: localizations.logScreenChartEmpty,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  _buildSectionTitle("Recent Activity (7d)"),
+                  _buildRecentActivitySection(localizations),
+                  const SizedBox(height: 24),
+
+                  if (!_isAuthorized)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Center(
+                        child: ElevatedButton(
+                          onPressed: _authorizeAndFetch,
+                          child: Text(localizations.statsAuthorizeButton),
                         ),
                       ),
-
-                    _buildSectionTitle("${_selectedAddiction?.name ?? 'Dopamine'} Triggers (7d)"),
+                    )
+                  else ...[
+                    _buildSectionTitle(localizations.statsHeartRateTitle),
                     _buildChartContainer(
                       LineChart(
                         datasets: [
                           LineChartData(
-                            entries: _getLast7DaysEntries((date) => (_triggerLog[date] ?? 0).toDouble()),
-                            color: colorScheme.primary,
+                            entries: _getLast7DaysEntries((date) => _heartRateData[date] ?? 0),
+                            color: Colors.orange,
+                            minValue: 80,
+                            maxValue: 130,
                           ),
                         ],
                         emptyLabel: localizations.logScreenChartEmpty,
@@ -169,57 +188,25 @@ class _StatsScreenState extends State<StatsScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    _buildSectionTitle("Recent Activity (7d)"),
-                    _buildRecentActivitySection(localizations),
-                    const SizedBox(height: 24),
-
-                    if (!_isAuthorized)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 20),
-                        child: Center(
-                          child: ElevatedButton(
-                            onPressed: _authorizeAndFetch,
-                            child: Text(localizations.statsAuthorizeButton),
+                    _buildSectionTitle(localizations.statsStressTitle),
+                    _buildChartContainer(
+                      LineChart(
+                        datasets: [
+                          LineChartData(
+                            entries: _getLast7DaysEntries((date) => _stressData[date] ?? 0),
+                            color: Colors.teal,
+                            minValue: 0,
+                            maxValue: 100,
                           ),
-                        ),
-                      )
-                    else ...[
-                      _buildSectionTitle(localizations.statsHeartRateTitle),
-                      _buildChartContainer(
-                        LineChart(
-                          datasets: [
-                            LineChartData(
-                              entries: _getLast7DaysEntries((date) => _heartRateData[date] ?? 0),
-                              color: Colors.orange,
-                              minValue: 80,
-                              maxValue: 130,
-                            ),
-                          ],
-                          emptyLabel: localizations.logScreenChartEmpty,
-                        ),
+                        ],
+                        emptyLabel: localizations.logScreenChartEmpty,
                       ),
-                      const SizedBox(height: 24),
-
-                      _buildSectionTitle(localizations.statsStressTitle),
-                      _buildChartContainer(
-                        LineChart(
-                          datasets: [
-                            LineChartData(
-                              entries: _getLast7DaysEntries((date) => _stressData[date] ?? 0),
-                              color: Colors.teal,
-                              minValue: 0,
-                              maxValue: 100,
-                            ),
-                          ],
-                          emptyLabel: localizations.logScreenChartEmpty,
-                        ),
-                      ),
-                    ],
+                    ),
                   ],
-                ),
+                ],
               ),
-          ),
-    );
+            ),
+        );
   }
 
   Widget _buildSectionTitle(String title) {
@@ -282,13 +269,13 @@ class _StatsScreenState extends State<StatsScreen> {
                 const SizedBox(height: 8),
                 if (entry.moods.isNotEmpty)
                   _buildActivityRow(Icons.sentiment_satisfied, Colors.orange, 
-                    entry.moods.map((m) => "${DailyLogService.moodEmojis[m]} ${_getMoodLabel(m, context)}").join(", ")),
+                    entry.moods.map((m) => "${DailyLogService.moodEmojis[m] ?? _customEmojis[m] ?? '✨'} ${_getMoodLabel(m, context)}").join(", ")),
                 if (entry.activities.isNotEmpty)
                   _buildActivityRow(Icons.directions_run, Colors.green, 
-                    entry.activities.map((a) => "${DailyLogService.activityEmojis[a]} ${_getActivityLabel(a, context)}").join(", ")),
+                    entry.activities.map((a) => "${DailyLogService.activityEmojis[a] ?? _customEmojis[a] ?? '✨'} ${_getActivityLabel(a, context)}").join(", ")),
                 if (entry.others.isNotEmpty)
                   _buildActivityRow(Icons.more_horiz, Colors.blue, 
-                    entry.others.map((o) => "${DailyLogService.otherEmojis[o]} ${_getOtherLabel(o, context)}").join(", ")),
+                    entry.others.map((o) => "${DailyLogService.otherEmojis[o] ?? _customEmojis[o] ?? '✨'} ${_getOtherLabel(o, context)}").join(", ")),
               ],
             ),
           ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
-import 'screens/home_screen.dart';
+import 'screens/main_screen.dart';
 import 'package:dopamine_tracker/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'widget_provider.dart';
@@ -84,7 +84,7 @@ class _DopamineTrackerAppState extends State<DopamineTrackerApp> {
           themeMode: _themeMode,
           home: _isFirstRun 
             ? _OnboardingScreen(onComplete: () => setState(() => _isFirstRun = false))
-            : HomeScreen(setThemeMode: _setThemeMode),
+            : MainScreen(setThemeMode: _setThemeMode),
         );
       },
     );

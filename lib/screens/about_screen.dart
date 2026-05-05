@@ -75,7 +75,7 @@ class _AboutScreenState extends State<AboutScreen> {
               l10n.aboutCreditsTitle,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 10),
+           /* const SizedBox(height: 10),
             Text(
               l10n.aboutCreditsText,
               style: const TextStyle(fontSize: 16),
@@ -88,7 +88,7 @@ class _AboutScreenState extends State<AboutScreen> {
               ),
               onTap: () => _launchURL('https://openmoji.org/'),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 10),*/
             InkWell(
               child: Text(
                 l10n.aboutCreditsMyWebsite,

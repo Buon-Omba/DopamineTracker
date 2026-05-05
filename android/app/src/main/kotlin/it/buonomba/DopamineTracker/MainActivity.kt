@@ -2,12 +2,12 @@ package it.buonomba.DopamineTracker
 
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import it.buonomba.DopamineTracker.HomeWidgetProvider
 
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
     private val CHANNEL = "it.buonomba.DopamineTracker/app_widgets"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {

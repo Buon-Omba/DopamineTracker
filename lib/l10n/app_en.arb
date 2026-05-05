@@ -610,5 +610,12 @@
     }
   },
   "logTodayHR": "Heart Rate: {hr} BPM",
-  "logTodayStress": "Stress (HRV): {stress} ms"
+  "logTodayStress": "Stress (HRV): {stress} ms",
+
+  "addCustomItemTitle": "Add custom item",
+  "addCustomItemNameLabel": "Name",
+  "addCustomItemCategoryLabel": "Category",
+  "categoryMood": "Mood",
+  "categoryActivity": "Activity",
+  "categoryOther": "Other"
 }

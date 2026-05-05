@@ -1201,6 +1201,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stress (HRV): {stress} ms'**
   String logTodayStress(Object stress);
+
+  /// No description provided for @addCustomItemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add custom item'**
+  String get addCustomItemTitle;
+
+  /// No description provided for @addCustomItemNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get addCustomItemNameLabel;
+
+  /// No description provided for @addCustomItemCategoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get addCustomItemCategoryLabel;
+
+  /// No description provided for @categoryMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get categoryMood;
+
+  /// No description provided for @categoryActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get categoryActivity;
+
+  /// No description provided for @categoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get categoryOther;
 }
 
 class _AppLocalizationsDelegate

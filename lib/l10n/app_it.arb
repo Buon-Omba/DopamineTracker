@@ -603,5 +603,12 @@
     }
   },
   "logTodayHR": "Battito Cardiaco: {hr} BPM",
-  "logTodayStress": "Stress (HRV): {stress} ms"
+  "logTodayStress": "Stress (HRV): {stress} ms",
+
+  "addCustomItemTitle": "Aggiungi voce personalizzata",
+  "addCustomItemNameLabel": "Nome",
+  "addCustomItemCategoryLabel": "Categoria",
+  "categoryMood": "Umore",
+  "categoryActivity": "Attività",
+  "categoryOther": "Altro"
 }

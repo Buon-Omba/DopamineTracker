@@ -7,24 +7,35 @@ class HealthService {
   static const String _keyTodayHeartRate = 'today_avg_heart_rate';
   static const String _keyTodayStress = 'today_avg_stress';
 
+  final List<HealthDataType> _types = [
+    HealthDataType.HEART_RATE,
+    HealthDataType.RESTING_HEART_RATE,
+    HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
+  ];
+
+  final List<HealthDataAccess> _permissions = [
+    HealthDataAccess.READ,
+    HealthDataAccess.READ,
+    HealthDataAccess.READ,
+  ];
+
+  Future<void> _prepare() async {
+    await _health.configure();
+  }
+
+  Future<bool> isAuthorized() async {
+    await _prepare();
+    return await _health.hasPermissions(_types, permissions: _permissions) ?? false;
+  }
+
   Future<bool> authorize() async {
-    final types = [
-      HealthDataType.HEART_RATE,
-      HealthDataType.RESTING_HEART_RATE,
-      HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
-    ];
+    await _prepare();
 
-    final permissions = [
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
-    ];
-
-    bool? hasPermissions = await _health.hasPermissions(types, permissions: permissions);
+    bool? hasPermissions = await _health.hasPermissions(_types, permissions: _permissions);
     
     if (hasPermissions != true) {
       try {
-        hasPermissions = await _health.requestAuthorization(types, permissions: permissions);
+        hasPermissions = await _health.requestAuthorization(_types, permissions: _permissions);
       } catch (error) {
         print("Exception in authorize: $error");
       }
@@ -34,6 +45,7 @@ class HealthService {
   }
 
   Future<Map<DateTime, double>> fetchDailyAverageHeartRate({int days = 7}) async {
+    await _prepare();
     final now = DateTime.now();
     final start = now.subtract(Duration(days: days));
 
@@ -47,6 +59,7 @@ class HealthService {
   }
 
   Future<Map<DateTime, double>> fetchDailyAverageStress({int days = 7}) async {
+    await _prepare();
     final now = DateTime.now();
     final start = now.subtract(Duration(days: days));
 
@@ -89,6 +102,7 @@ class HealthService {
   }
 
   Future<double?> updateAndSaveTodayHeartRate() async {
+    await _prepare();
     final now = DateTime.now();
     final startOfToday = DateTime(now.year, now.month, now.day);
 
@@ -126,6 +140,7 @@ class HealthService {
   }
 
   Future<double?> updateAndSaveTodayStress() async {
+    await _prepare();
     final now = DateTime.now();
     final startOfToday = DateTime(now.year, now.month, now.day);
 

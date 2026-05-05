@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,6 +28,14 @@ class DopamineLogService {
   static const _lastTriggerKeyPrefix = 'lastTrigger_';
   static const _hasStartedKey = 'hasStarted';
 
+  // Stream to notify app-wide log updates
+  static final _updateController = StreamController<void>.broadcast();
+  static Stream<void> get updates => _updateController.stream;
+
+  static void notifyUpdate() {
+    _updateController.add(null);
+  }
+
   static String _formatName(String input) {
     if (input.trim().isEmpty) return "";
     final trimmed = input.trim();
@@ -54,7 +63,8 @@ class DopamineLogService {
     addictions.add(Addiction(id: id, name: formattedName));
     await prefs.setString(_addictionsKey, jsonEncode(addictions.map((e) => e.toJson()).toList()));
     await prefs.setBool(_hasStartedKey, true);
-    await DopamineTrackerApp.updateHomeWidgets(); 
+    await DopamineTrackerApp.updateHomeWidgets();
+    notifyUpdate();
   }
 
   static Future<void> removeAddiction(String id) async {
@@ -65,6 +75,7 @@ class DopamineLogService {
     await prefs.remove(_logKeyPrefix + id);
     await prefs.remove(_lastTriggerKeyPrefix + id);
     await DopamineTrackerApp.updateHomeWidgets();
+    notifyUpdate();
   }
 
   static Future<void> logTrigger(String addictionId, {DateTime? timestamp}) async {
@@ -77,7 +88,8 @@ class DopamineLogService {
 
     await prefs.setString(_logKeyPrefix + addictionId, jsonEncode(log));
     await prefs.setString(_lastTriggerKeyPrefix + addictionId, now.toIso8601String());
-    await DopamineTrackerApp.updateHomeWidgets(); 
+    await DopamineTrackerApp.updateHomeWidgets();
+    notifyUpdate();
   }
 
   static Future<int> countForDate(String addictionId, DateTime date) async {
@@ -99,7 +111,8 @@ class DopamineLogService {
     }
 
     await prefs.setString(_logKeyPrefix + addictionId, jsonEncode(log));
-    await DopamineTrackerApp.updateHomeWidgets(); 
+    await DopamineTrackerApp.updateHomeWidgets();
+    notifyUpdate();
   }
 
   static Future<void> removeDate(String addictionId, DateTime date) async {
@@ -108,7 +121,8 @@ class DopamineLogService {
     final dayKey = _formatDate(date);
     log.remove(dayKey);
     await prefs.setString(_logKeyPrefix + addictionId, jsonEncode(log));
-    await DopamineTrackerApp.updateHomeWidgets(); 
+    await DopamineTrackerApp.updateHomeWidgets();
+    notifyUpdate();
   }
 
   static Future<Map<DateTime, int>> loadCalendarLog(String addictionId) async {

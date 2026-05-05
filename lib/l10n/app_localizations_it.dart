@@ -664,4 +664,22 @@ class AppLocalizationsIt extends AppLocalizations {
   String logTodayStress(Object stress) {
     return 'Stress (HRV): $stress ms';
   }
+
+  @override
+  String get addCustomItemTitle => 'Aggiungi voce personalizzata';
+
+  @override
+  String get addCustomItemNameLabel => 'Nome';
+
+  @override
+  String get addCustomItemCategoryLabel => 'Categoria';
+
+  @override
+  String get categoryMood => 'Umore';
+
+  @override
+  String get categoryActivity => 'Attività';
+
+  @override
+  String get categoryOther => 'Altro';
 }

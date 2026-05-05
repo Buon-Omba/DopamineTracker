@@ -5,30 +5,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/time_formatter.dart';
 import '../utils/calculations.dart';
-import 'config_screen.dart';
-import 'about_screen.dart';
 import 'package:dopamine_tracker/l10n/app_localizations.dart';
-import '../components/navigation_bar.dart';
 import '../services/smoke_log_service.dart';
 import '../services/daily_log_service.dart';
 import '../widget_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(ThemeMode) setThemeMode;
-  const HomeScreen({super.key, required this.setThemeMode});
+  final Addiction? selectedAddiction;
+  const HomeScreen({super.key, required this.setThemeMode, this.selectedAddiction});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
-  List<Addiction> addictions = [];
-  Addiction? selectedAddiction;
-  
   DateTime? lastTrigger;
-  bool isFirstTime = true;
-  bool _friendsEnabled = true;
-
   int weeklyOccurrences = 0;
   int dailyIntensity = 0;
 
@@ -39,7 +31,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   DailyLogEntry _currentDailyEntry = DailyLogEntry();
 
+  List<String> _customMoods = [];
+  List<String> _customActivities = [];
+  List<String> _customOthers = [];
+  Map<String, String> _customEmojis = {};
+
   late Timer timer;
+  StreamSubscription? _updateSubscription;
 
   @override
   void initState() {
@@ -48,12 +46,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _generateAndSaveUserId();
     _initializeData();
     timer = Timer.periodic(const Duration(seconds: 1), (_) => _updateCalculations());
+    
+    _updateSubscription = DopamineLogService.updates.listen((_) {
+      _initializeData();
+    });
+  }
+
+  @override
+  void didUpdateWidget(HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedAddiction != oldWidget.selectedAddiction) {
+      _loadSelectedAddictionData();
+    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     timer.cancel();
+    _updateSubscription?.cancel();
     super.dispose();
   }
 
@@ -79,35 +90,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     await prefs.reload();
     if (!mounted) return;
 
-    await _loadAddictions();
     await _loadConfigData();
-    await _loadSelectedAddictionData();
     await _loadTodayDailyLog();
+    await _loadCustomItems();
+    await _loadSelectedAddictionData();
     _updateCalculations();
   }
 
-  Future<void> _loadAddictions() async {
-    final list = await DopamineLogService.getAddictions();
+  Future<void> _loadCustomItems() async {
+    final moods = await DailyLogService.getCustomItems('moods');
+    final activities = await DailyLogService.getCustomItems('activities');
+    final others = await DailyLogService.getCustomItems('others');
+    final emojis = await DailyLogService.getCustomEmojis();
     if (!mounted) return;
     setState(() {
-      addictions = list;
-      if (selectedAddiction == null && addictions.isNotEmpty) {
-        selectedAddiction = addictions.first;
-      }
+      _customMoods = moods;
+      _customActivities = activities;
+      _customOthers = others;
+      _customEmojis = emojis;
     });
   }
 
   Future<void> _loadSelectedAddictionData() async {
-    if (selectedAddiction == null) return;
+    if (widget.selectedAddiction == null) return;
     
-    final last = await DopamineLogService.getLastTrigger(selectedAddiction!.id);
-    final count = await DopamineLogService.countForDate(selectedAddiction!.id, DateTime.now());
+    final last = await DopamineLogService.getLastTrigger(widget.selectedAddiction!.id);
+    final count = await DopamineLogService.countForDate(widget.selectedAddiction!.id, DateTime.now());
     
     if (!mounted) return;
     setState(() {
       lastTrigger = last;
       triggersLoggedToday = count;
-      isFirstTime = last == null;
     });
   }
 
@@ -177,7 +190,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     setState(() {
       weeklyOccurrences = prefs.getInt('packetsPerWeek') ?? 0;
       dailyIntensity = prefs.getInt('cigarettesPerPacket') ?? 0;
-      _friendsEnabled = prefs.getBool('friendsEnabled') ?? true;
     });
   }
 
@@ -210,10 +222,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _logTrigger() async {
-    if (selectedAddiction == null) return;
+    if (widget.selectedAddiction == null) {
+       print("HomeScreen: Log trigger failed - selectedAddiction is null");
+       return;
+    }
     
     final now = DateTime.now();
-    await DopamineLogService.logTrigger(selectedAddiction!.id, timestamp: now);
+    print("HomeScreen: Logging trigger for ${widget.selectedAddiction!.name}");
+    await DopamineLogService.logTrigger(widget.selectedAddiction!.id, timestamp: now);
     
     if (!mounted) return;
     await _loadSelectedAddictionData();
@@ -224,61 +240,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
           content:
-              Text(AppLocalizations.of(context)!.homeSnackBarCigaretteLogged(selectedAddiction?.name ?? 'Dopamine'))),
-    );
-  }
-
-  void _showAddAddictionDialog() {
-    final controller = TextEditingController();
-    String? errorText;
-
-    String formatName(String input) {
-      if (input.isEmpty) return "";
-      return input[0].toUpperCase() + input.substring(1).toLowerCase();
-    }
-
-    bool isOnlyText(String input) {
-      return RegExp(r'^[a-zA-ZÀ-ÿ\s]+$').hasMatch(input);
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text("Aggiungi dipendenza"),
-          content: TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              hintText: "Esempio: Social Media, Zucchero...",
-              errorText: errorText,
-            ),
-            autofocus: true,
-            onChanged: (_) => setDialogState(() => errorText = null),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Annulla")),
-            TextButton(
-              onPressed: () async {
-                final input = controller.text.trim();
-                if (input.isEmpty) {
-                  setDialogState(() => errorText = "Inserisci un nome");
-                  return;
-                }
-                if (!isOnlyText(input)) {
-                  setDialogState(() => errorText = "Inserisci solo lettere");
-                  return;
-                }
-                
-                final formattedName = formatName(input);
-                await DopamineLogService.addAddiction(formattedName);
-                await _loadAddictions();
-                if (mounted) Navigator.pop(context);
-              },
-              child: const Text("Aggiungi"),
-            ),
-          ],
-        ),
-      ),
+              Text(AppLocalizations.of(context)!.homeSnackBarCigaretteLogged(widget.selectedAddiction?.name ?? 'Dopamine'))),
     );
   }
 
@@ -289,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         : const Duration();
     final locale = Localizations.localeOf(context).toString();
     final l10n = AppLocalizations.of(context)!;
-    final addictionName = selectedAddiction?.name ?? 'Dopamine';
+    final addictionName = widget.selectedAddiction?.name ?? 'Dopamine';
 
     final timeComponents = {
       'days': duration.inDays,
@@ -297,254 +259,246 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       'minutes': duration.inMinutes % 60
     };
 
-    return Scaffold(
-      appBar: AppBar(
-        title: addictions.isEmpty 
-          ? const Text('')
-          : DropdownButton<Addiction>(
-              value: selectedAddiction,
-              underline: const SizedBox(),
-              icon: const Icon(Icons.keyboard_arrow_down),
-              items: addictions.map((a) => DropdownMenuItem(
-                value: a,
-                child: Text(a.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-              )).toList(),
-              onChanged: (val) {
-                setState(() {
-                  selectedAddiction = val;
-                });
-                _loadSelectedAddictionData();
-              },
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(top: 0.0, left: 16.0, right: 16.0, bottom: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.homeSinceLastTitle(addictionName),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    formatTime(timeComponents),
+                    style: const TextStyle(
+                        fontSize: 30, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _formatLastTrigger(locale, context),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
             ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _showAddAddictionDialog,
-            tooltip: "Aggiungi dipendenza",
           ),
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'config') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ConfigScreen(setThemeMode: widget.setThemeMode)),
-                ).then((_) => _initializeData());
-              } else if (value == 'about') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AboutScreen()),
-                );
-              }
+          const SizedBox(height: 10),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final columnCount = 2;
+              final itemWidth =
+                  (constraints.maxWidth - (12 * (columnCount - 1))) /
+                      columnCount;
+
+              final colorScheme = Theme.of(context).colorScheme;
+              final items = [
+                _buildStatCard(
+                  icon: Icons.bolt,
+                  color: colorScheme.tertiaryContainer.withValues(alpha: 0.5),
+                  text: l10n.homeSmokedTodayText(
+                    triggersLoggedToday.toString(),
+                    addictionName,
+                  ),
+                  availableWidth: itemWidth,
+                ),
+                _buildStatCard(
+                  icon: Icons.access_time,
+                  color: colorScheme.errorContainer.withValues(alpha: 0.5),
+                  text: l10n.homeHoursWithoutSmokingText(
+                    hoursWithoutTriggers.toString(),
+                    addictionName,
+                  ),
+                  availableWidth: itemWidth,
+                ),
+              ];
+
+              return Wrap(
+                spacing: 12,
+                runSpacing: 10,
+                children: items,
+              );
             },
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem(
-                value: 'config',
-                child: Text(l10n.homeMenuConfig),
-              ),
-              PopupMenuItem(
-                value: 'about',
-                child: Text(l10n.homeMenuAbout),
-              ),
-            ],
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Dopamine Tracker',
-              style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              selectedAddiction != null 
-                ? "Stai tracciando: ${selectedAddiction!.name}"
-                : l10n.homeTagline,
-              style: TextStyle(
-                fontSize: 16,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 16.0, horizontal: 12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.homeSinceLastTitle(addictionName),
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      formatTime(timeComponents),
-                      style: const TextStyle(
-                          fontSize: 32, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _formatLastTrigger(locale, context),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+          const SizedBox(height: 10),
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Mood e Activity",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 6.0,
+                    children: [
+                      // Moods
+                      ...DailyLogService.moodEmojis.keys
+                        .where((k) => ![
+                              'obsessive',
+                              'mood_swings',
+                              'guilt',
+                              'confused',
+                              'self_critical'
+                            ].contains(k))
+                        .map((moodKey) {
+                          final isSelected = _currentDailyEntry.moods.contains(moodKey);
+                          return FilterChip(
+                            visualDensity: VisualDensity.compact,
+                            avatar: Text(DailyLogService.moodEmojis[moodKey]!),
+                            label: Text(_getMoodLabel(moodKey, context), style: const TextStyle(fontSize: 14)),
+                            selected: isSelected,
+                            onSelected: (_) => _toggleMood(moodKey),
+                            selectedColor: Colors.orange.withValues(alpha: 0.3),
+                            checkmarkColor: Colors.orange,
+                          );
+                        }),
+                      ..._customMoods.map((moodKey) {
+                          final isSelected = _currentDailyEntry.moods.contains(moodKey);
+                          return GestureDetector(
+                            onLongPress: () => _showEditCustomItemDialog('moods', moodKey),
+                            child: FilterChip(
+                              visualDensity: VisualDensity.compact,
+                              avatar: Text(_customEmojis[moodKey] ?? '✨'),
+                              label: Text(moodKey, style: const TextStyle(fontSize: 14)),
+                              selected: isSelected,
+                              onSelected: (_) => _toggleMood(moodKey),
+                              selectedColor: Colors.orange.withValues(alpha: 0.3),
+                              checkmarkColor: Colors.orange,
+                            ),
+                          );
+                        }),
+                      // Activities
+                      ...DailyLogService.activityEmojis.keys
+                        .where((k) => ![
+                              'yoga',
+                              'aerobics',
+                              'team_sports',
+                              'walking',
+                              'cycling'
+                            ].contains(k))
+                        .map((activityKey) {
+                          final isSelected = _currentDailyEntry.activities.contains(activityKey);
+                          return FilterChip(
+                            visualDensity: VisualDensity.compact,
+                            avatar: Text(DailyLogService.activityEmojis[activityKey]!),
+                            label: Text(_getActivityLabel(activityKey, context), style: const TextStyle(fontSize: 14)),
+                            selected: isSelected,
+                            onSelected: (_) => _toggleItem('activities', activityKey),
+                            selectedColor: Colors.green.withValues(alpha: 0.3),
+                            checkmarkColor: Colors.green,
+                          );
+                        }),
+                      ..._customActivities.map((activityKey) {
+                          final isSelected = _currentDailyEntry.activities.contains(activityKey);
+                          return GestureDetector(
+                            onLongPress: () => _showEditCustomItemDialog('activities', activityKey),
+                            child: FilterChip(
+                              visualDensity: VisualDensity.compact,
+                              avatar: Text(_customEmojis[activityKey] ?? '✨'),
+                              label: Text(activityKey, style: const TextStyle(fontSize: 14)),
+                              selected: isSelected,
+                              onSelected: (_) => _toggleItem('activities', activityKey),
+                              selectedColor: Colors.green.withValues(alpha: 0.3),
+                              checkmarkColor: Colors.green,
+                            ),
+                          );
+                        }),
+                      // Others
+                      ...DailyLogService.otherEmojis.keys
+                        .where((k) => ![
+                              'meditation',
+                              'journaling',
+                              'alcohol',
+                              'breathing',
+                              'kegel'
+                            ].contains(k))
+                        .map((otherKey) {
+                          final isSelected = _currentDailyEntry.others.contains(otherKey);
+                          return FilterChip(
+                            visualDensity: VisualDensity.compact,
+                            avatar: Text(DailyLogService.otherEmojis[otherKey]!),
+                            label: Text(_getOtherLabel(otherKey, context), style: const TextStyle(fontSize: 14)),
+                            selected: isSelected,
+                            onSelected: (_) => _toggleItem('others', otherKey),
+                            selectedColor: Colors.blue.withValues(alpha: 0.3),
+                            checkmarkColor: Colors.blue,
+                          );
+                        }),
+                      ..._customOthers.map((otherKey) {
+                          final isSelected = _currentDailyEntry.others.contains(otherKey);
+                          return GestureDetector(
+                            onLongPress: () => _showEditCustomItemDialog('others', otherKey),
+                            child: FilterChip(
+                              visualDensity: VisualDensity.compact,
+                              avatar: Text(_customEmojis[otherKey] ?? '✨'),
+                              label: Text(otherKey, style: const TextStyle(fontSize: 14)),
+                              selected: isSelected,
+                              onSelected: (_) => _toggleItem('others', otherKey),
+                              selectedColor: Colors.blue.withValues(alpha: 0.3),
+                              checkmarkColor: Colors.blue,
+                            ),
+                          );
+                        }),
+                      ActionChip(
+                        visualDensity: VisualDensity.compact,
+                        avatar: const Text('➕'),
+                        label: const Text(''),
+                        onPressed: _showAddCustomItemDialog,
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final columnCount = 2;
-                final itemWidth =
-                    (constraints.maxWidth - (12 * (columnCount - 1))) /
-                        columnCount;
-
-                final colorScheme = Theme.of(context).colorScheme;
-                final items = [
-                  _buildStatCard(
-                    icon: Icons.bolt,
-                    color: colorScheme.tertiaryContainer.withOpacity(0.5),
-                    text: l10n.homeSmokedTodayText(
-                      triggersLoggedToday.toString(),
-                      addictionName,
-                    ),
-                    availableWidth: itemWidth,
-                  ),
-                  _buildStatCard(
-                    icon: Icons.access_time,
-                    color: colorScheme.errorContainer.withOpacity(0.5),
-                    text: l10n.homeHoursWithoutSmokingText(
-                      hoursWithoutTriggers.toString(),
-                      addictionName,
-                    ),
-                    availableWidth: itemWidth,
-                  ),
-                ];
-
-                return Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: items,
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.dailyLogCategoryMood,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8.0,
-                      runSpacing: 8.0,
-                      children: DailyLogService.moodEmojis.keys.map((moodKey) {
-                        final isSelected = _currentDailyEntry.moods.contains(moodKey);
-                        return FilterChip(
-                          avatar: Text(DailyLogService.moodEmojis[moodKey]!),
-                          label: Text(_getMoodLabel(moodKey, context)),
-                          selected: isSelected,
-                          onSelected: (_) => _toggleMood(moodKey),
-                          selectedColor: Colors.orange.withOpacity(0.3),
-                          checkmarkColor: Colors.orange,
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      l10n.dailyLogCategoryActivity,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8.0,
-                      runSpacing: 8.0,
-                      children: DailyLogService.activityEmojis.keys.map((activityKey) {
-                        final isSelected = _currentDailyEntry.activities.contains(activityKey);
-                        return FilterChip(
-                          avatar: Text(DailyLogService.activityEmojis[activityKey]!),
-                          label: Text(_getActivityLabel(activityKey, context)),
-                          selected: isSelected,
-                          onSelected: (_) => _toggleItem('activities', activityKey),
-                          selectedColor: Colors.green.withOpacity(0.3),
-                          checkmarkColor: Colors.green,
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      l10n.dailyLogCategoryOther,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8.0,
-                      runSpacing: 8.0,
-                      children: DailyLogService.otherEmojis.keys.map((otherKey) {
-                        final isSelected = _currentDailyEntry.others.contains(otherKey);
-                        return FilterChip(
-                          avatar: Text(DailyLogService.otherEmojis[otherKey]!),
-                          label: Text(_getOtherLabel(otherKey, context)),
-                          selected: isSelected,
-                          onSelected: (_) => _toggleItem('others', otherKey),
-                          selectedColor: Colors.blue.withOpacity(0.3),
-                          checkmarkColor: Colors.blue,
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                            ElevatedButton.icon(
-                            icon: Icon(
-                              Icons.add_circle_outline,
+          ),
+          const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                          ElevatedButton.icon(
+                          icon: Icon(
+                            Icons.add_circle_outline,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          onPressed: _logTrigger,
+                          label: Text(
+                            l10n.homeLogCigaretteButton(addictionName),
+                            style: TextStyle(
                               color: Theme.of(context).colorScheme.primary,
-                            ),
-                            onPressed: _logTrigger,
-                            label: Text(
-                              l10n.homeLogCigaretteButton(addictionName),
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        const SizedBox(width: 12),
-                      ],
-                    ),
-            const SizedBox(height: 16),
-          ],
-        ),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 28),
+                          ),
+                        ),
+                      const SizedBox(width: 12),
+                    ],
+                  ),
+          const SizedBox(height: 10),
+        ],
       ),
-      bottomNavigationBar: CustomNavigationBar(currentIndex: 0, setThemeMode: widget.setThemeMode),
     );
   }
 
@@ -554,6 +508,146 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
     return AppLocalizations.of(context)!.homeLastSmokedLabel(
       DateFormat.yMMMMd(locale).add_Hm().format(lastTrigger!.toLocal()),
+    );
+  }
+
+  void _showAddCustomItemDialog() {
+    final TextEditingController controller = TextEditingController();
+    final l10n = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.addCustomItemTitle),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              labelText: l10n.addCustomItemNameLabel,
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () async {
+                final name = controller.text.trim();
+                if (name.isNotEmpty) {
+                  // Default to 'others' category for custom items
+                  await DailyLogService.addCustomItem('others', name);
+                  if (!context.mounted) return;
+                  await _loadCustomItems();
+                  if (!context.mounted) return;
+                  Navigator.pop(context);
+                }
+              },
+              child: Text(l10n.save),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showEditCustomItemDialog(String category, String name) {
+    final l10n = AppLocalizations.of(context)!;
+    final TextEditingController emojiController = TextEditingController(text: _customEmojis[name] ?? '✨');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(name),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: emojiController,
+              decoration: const InputDecoration(
+                labelText: "Emoji",
+                hintText: "Inserisci un'emoji",
+              ),
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 24),
+            ),
+            const SizedBox(height: 20),
+            TextButton.icon(
+              onPressed: () async {
+                // Nested confirmation for delete
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text(l10n.delete),
+                    content: Text("${l10n.configDeleteAddictionConfirmation(name)}?"),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true), 
+                        child: Text(l10n.delete, style: const TextStyle(color: Colors.red))
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed == true) {
+                  await DailyLogService.removeCustomItem(category, name);
+                  if (!context.mounted) return;
+                  await _loadCustomItems();
+                  
+                  DailyLogEntry updatedEntry = _currentDailyEntry;
+                  if (category == 'moods') {
+                    List<String> newList = List.from(_currentDailyEntry.moods);
+                    if (newList.remove(name)) {
+                       updatedEntry = _currentDailyEntry.copyWith(moods: newList);
+                    }
+                  } else if (category == 'activities') {
+                    List<String> newList = List.from(_currentDailyEntry.activities);
+                    if (newList.remove(name)) {
+                       updatedEntry = _currentDailyEntry.copyWith(activities: newList);
+                    }
+                  } else {
+                    List<String> newList = List.from(_currentDailyEntry.others);
+                    if (newList.remove(name)) {
+                       updatedEntry = _currentDailyEntry.copyWith(others: newList);
+                    }
+                  }
+                  
+                  if (updatedEntry != _currentDailyEntry) {
+                    await DailyLogService.saveEntry(DateTime.now(), updatedEntry);
+                    if (mounted) setState(() => _currentDailyEntry = updatedEntry);
+                  }
+
+                  if (context.mounted) {
+                    Navigator.pop(context); // Close edit dialog
+                  }
+                }
+              },
+              icon: const Icon(Icons.delete, color: Colors.red),
+              label: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () async {
+              final newEmoji = emojiController.text.trim();
+              if (newEmoji.isNotEmpty) {
+                await DailyLogService.setCustomEmoji(name, newEmoji);
+                if (!context.mounted) return;
+                await _loadCustomItems();
+                Navigator.pop(context);
+              }
+            },
+            child: Text(l10n.save),
+          ),
+        ],
+      ),
     );
   }
 
@@ -597,7 +691,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 child: Text(
                   text,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: colorScheme.onSurface,
                   ),

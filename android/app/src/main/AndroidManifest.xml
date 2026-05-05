@@ -7,6 +7,11 @@
     <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
     <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY"/>
     <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE"/>
+
+    <!-- Permessi per compatibilità con versioni precedenti di Health Connect (Android 13 e inferiori) -->
+    <uses-permission android:name="androidx.health.permission.HEART_RATE.read" />
+    <uses-permission android:name="androidx.health.permission.RESTING_HEART_RATE.read" />
+    <uses-permission android:name="androidx.health.permission.HEART_RATE_VARIABILITY.read" />
     <uses-permission android:name="android.permission.CAMERA" tools:node="remove" />
     <application
         android:label="Dopamine Tracker"
@@ -38,6 +43,10 @@
             <intent-filter>
                 <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="androidx.health.connect.action.ACTION_MANAGE_HEALTH_PERMISSIONS" />
+            </intent-filter>
+            <meta-data android:name="health_permissions" android:resource="@array/health_permissions" />
         </activity>
 
         <activity

@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:dopamine_tracker/components/line_chart.dart';
-import 'package:dopamine_tracker/components/navigation_bar.dart';
 import 'package:dopamine_tracker/l10n/app_localizations.dart';
 import '../services/health_service.dart';
 import '../services/smoke_log_service.dart';
@@ -27,43 +27,51 @@ class _ChartEntry {
 
 class CalendarScreen extends StatefulWidget {
   final Function(ThemeMode) setThemeMode;
-  const CalendarScreen({super.key, required this.setThemeMode});
+  final Addiction? selectedAddiction;
+  const CalendarScreen({super.key, required this.setThemeMode, this.selectedAddiction});
 
   @override
   State<CalendarScreen> createState() => _CalendarScreenState();
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  List<Addiction> _addictions = [];
-  Addiction? _selectedAddiction;
-
   Map<DateTime, int> _log = {};
   Map<DateTime, DailyLogEntry> _dailyEntries = {};
   Map<DateTime, double> _heartRateLog = {};
   Map<DateTime, double> _stressLog = {};
+  Map<String, String> _customEmojis = {};
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
   ChartRange _selectedRange = ChartRange.week;
-  int? _selectedDayScore;
   double? _todayHeartRate;
   double? _todayStress;
+  StreamSubscription? _updateSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadInitialData();
+    _updateSubscription = DopamineLogService.updates.listen((_) {
+      _loadLog();
+    });
+  }
+
+  @override
+  void didUpdateWidget(CalendarScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedAddiction != oldWidget.selectedAddiction) {
+      _loadLog();
+    }
+  }
+
+  @override
+  void dispose() {
+    _updateSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadInitialData() async {
-    final list = await DopamineLogService.getAddictions();
-    setState(() {
-      _addictions = list;
-      if (_addictions.isNotEmpty) {
-        _selectedAddiction = _addictions.first;
-      }
-    });
     await _loadLog();
-    await _loadSelectedDayScore();
     await _loadHeartRate();
   }
 
@@ -91,10 +99,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Future<void> _loadLog() async {
-    if (_selectedAddiction == null) return;
+    if (widget.selectedAddiction == null) return;
     
-    final log = await DopamineLogService.loadCalendarLog(_selectedAddiction!.id);
+    final log = await DopamineLogService.loadCalendarLog(widget.selectedAddiction!.id);
     final dailyEntries = await DailyLogService.loadAllEntries();
+    final customEmojis = await DailyLogService.getCustomEmojis();
     
     final healthService = HealthService();
     final hrLog = await healthService.fetchDailyAverageHeartRate(days: 365);
@@ -104,16 +113,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
     setState(() {
       _log = log;
       _dailyEntries = dailyEntries;
+      _customEmojis = customEmojis;
       _heartRateLog = hrLog;
       _stressLog = stressLog;
-    });
-  }
-
-  Future<void> _loadSelectedDayScore() async {
-    final entry = await DailyLogService.getEntry(_selectedDay);
-    if (!mounted) return;
-    setState(() {
-      _selectedDayScore = entry?.totalScore;
     });
   }
 
@@ -293,390 +295,408 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final combinedEntries = _buildRangeData(localeString);
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    final addictionName = _selectedAddiction?.name ?? 'Dopamine';
+    final addictionName = widget.selectedAddiction?.name ?? 'Dopamine';
 
     final bool isToday = isSameDay(_selectedDay, DateTime.now());
     final displayHR = isToday ? (_todayHeartRate ?? 0.0) : _heartRateForDay(_selectedDay);
     final displayStress = isToday ? (_todayStress ?? 0.0) : _stressForDay(_selectedDay);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: _addictions.isEmpty 
-          ? Text(l10n.logScreenTitle(addictionName))
-          : DropdownButton<Addiction>(
-              value: _selectedAddiction,
-              underline: const SizedBox(),
-              items: _addictions.map((a) => DropdownMenuItem(value: a, child: Text(a.name))).toList(),
-              onChanged: (val) {
-                setState(() => _selectedAddiction = val);
-                _loadLog();
-              },
-            ),
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await _loadLog();
-          await _loadSelectedDayScore();
-          await _loadHeartRate();
-        },
-        child: ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: [
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              elevation: 2,
-              color: Theme.of(context).colorScheme.primary,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.logScreenToday,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _loadLog();
+        await _loadHeartRate();
+      },
+      child: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          Card(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+            elevation: 2,
+            color: Theme.of(context).colorScheme.primary,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.logScreenToday,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        todayCount.toString(),
+                        style: const TextStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Text(
-                          todayCount.toString(),
-                          style: const TextStyle(
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                      const SizedBox(width: 8),
+                      Text(
+                        todayCount == 1 
+                            ? l10n.logScreenCigaretteSingular(addictionName)
+                            : l10n.logScreenCigarettePlural(addictionName),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          todayCount == 1 
-                              ? l10n.logScreenCigaretteSingular(addictionName)
-                              : l10n.logScreenCigarettePlural(addictionName),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TableCalendar(
-                  locale: localeString,
-                  firstDay: _firstDay,
-                  lastDay: _lastDay,
-                  focusedDay: _focusedDay,
-                  selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                  startingDayOfWeek: StartingDayOfWeek.monday,
-                  availableGestures: AvailableGestures.all,
-                  calendarFormat: CalendarFormat.month,
-                  onDaySelected: (selectedDay, focusedDay) {
-                    if (!mounted) return;
-                    setState(() {
-                      _selectedDay = selectedDay;
-                      _focusedDay = focusedDay;
-                    });
-                    _loadSelectedDayScore();
-                  },
-                  onDayLongPressed: (selectedDay, focusedDay) {
-                    if (!mounted) return;
-                    setState(() {
-                      _selectedDay = selectedDay;
-                      _focusedDay = focusedDay;
-                    });
-                    _loadSelectedDayScore();
-                    _showEditDialog(selectedDay);
-                  },
-                  headerStyle: const HeaderStyle(
-                    formatButtonVisible: false,
-                    titleCentered: true,
+          ),
+          const SizedBox(height: 16),
+          Card(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TableCalendar(
+                locale: localeString,
+                firstDay: _firstDay,
+                lastDay: _lastDay,
+                focusedDay: _focusedDay,
+                selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                startingDayOfWeek: StartingDayOfWeek.monday,
+                availableGestures: AvailableGestures.all,
+                calendarFormat: CalendarFormat.month,
+                onDaySelected: (selectedDay, focusedDay) {
+                  if (!mounted) return;
+                  setState(() {
+                    _selectedDay = selectedDay;
+                    _focusedDay = focusedDay;
+                  });
+                },
+                onDayLongPressed: (selectedDay, focusedDay) {
+                  if (!mounted) return;
+                  setState(() {
+                    _selectedDay = selectedDay;
+                    _focusedDay = focusedDay;
+                  });
+                  _showEditDialog(selectedDay);
+                },
+                headerStyle: const HeaderStyle(
+                  formatButtonVisible: false,
+                  titleCentered: true,
+                ),
+                calendarStyle: CalendarStyle(
+                  todayDecoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondary,
+                    shape: BoxShape.circle,
                   ),
-                  calendarStyle: CalendarStyle(
-                    todayDecoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.secondary,
-                      shape: BoxShape.circle,
-                    ),
-                    selectedDecoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      shape: BoxShape.circle,
-                    ),
+                  selectedDecoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    shape: BoxShape.circle,
                   ),
-                  eventLoader: (day) {
-                    final count = _countForDay(day);
-                    if (count == 0) return const [];
-                    return List.generate(count, (index) => index);
-                  },
-                  calendarBuilders: CalendarBuilders(
-                    markerBuilder: (context, date, events) {
-                      final count = _countForDay(date);
-                      if (count == 0) return null;
+                ),
+                eventLoader: (day) {
+                  final count = _countForDay(day);
+                  if (count == 0) return const [];
+                  return List.generate(count, (index) => index);
+                },
+                calendarBuilders: CalendarBuilders(
+                  markerBuilder: (context, date, events) {
+                    final count = _countForDay(date);
+                    if (count == 0) return null;
 
-                      return Positioned(
-                        right: 2,
-                        bottom: 2,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.secondary,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            count.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    return Positioned(
+                      right: 2,
+                      bottom: 2,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.secondary,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          count.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: SegmentedButton<ChartRange>(
-                          showSelectedIcon: false,
-                          style: const ButtonStyle(
-                            visualDensity:
-                                VisualDensity(horizontal: -2, vertical: -2),
-                          ),
-                          segments: [
-                            ButtonSegment(
-                              value: ChartRange.week,
-                              label: Text(l10n.logScreenRange7d),
-                            ),
-                            ButtonSegment(
-                              value: ChartRange.twoWeeks,
-                              label: Text(l10n.logScreenRange14d),
-                            ),
-                            ButtonSegment(
-                              value: ChartRange.month,
-                              label: Text(l10n.logScreenRange30d),
-                            ),
-                            ButtonSegment(
-                              value: ChartRange.sixMonths,
-                              label: Text(l10n.logScreenRange180d),
-                            ),
-                            ButtonSegment(
-                              value: ChartRange.year,
-                              label: Text(l10n.logScreenRange365d),
-                            ),
-                          ],
-                          selected: {_selectedRange},
-                          onSelectionChanged: (selection) {
-                            if (!mounted) return;
-                            setState(() {
-                              _selectedRange = selection.first;
-                            });
-                          },
+          ),
+          const SizedBox(height: 16),
+          Card(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SegmentedButton<ChartRange>(
+                        showSelectedIcon: false,
+                        style: const ButtonStyle(
+                          visualDensity:
+                              VisualDensity(horizontal: -2, vertical: -2),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 220,
-                      child: LineChart(
-                        datasets: [
-                          LineChartData(
-                            entries: combinedEntries
-                                .map((e) => LineChartEntry(label: e.label, value: e.triggerValue))
-                                .toList(),
-                            color: colorScheme.primary,
+                        segments: [
+                          ButtonSegment(
+                            value: ChartRange.week,
+                            label: Text(l10n.logScreenRange7d),
                           ),
-                          LineChartData(
-                            entries: combinedEntries
-                                .map((e) => LineChartEntry(label: e.label, value: e.moodValue))
-                                .toList(),
-                            color: Colors.red,
-                            minValue: -30,
-                            maxValue: 30,
+                          ButtonSegment(
+                            value: ChartRange.twoWeeks,
+                            label: Text(l10n.logScreenRange14d),
                           ),
-                          LineChartData(
-                            entries: combinedEntries
-                                .map((e) => LineChartEntry(label: e.label, value: e.heartRateValue))
-                                .toList(),
-                            color: Colors.orange,
-                            minValue: 80,
-                            maxValue: 130,
+                          ButtonSegment(
+                            value: ChartRange.month,
+                            label: Text(l10n.logScreenRange30d),
                           ),
-                          LineChartData(
-                            entries: combinedEntries
-                                .map((e) => LineChartEntry(label: e.label, value: e.stressValue))
-                                .toList(),
-                            color: Colors.teal,
-                            minValue: 0,
-                            maxValue: 100,
+                          ButtonSegment(
+                            value: ChartRange.sixMonths,
+                            label: Text(l10n.logScreenRange180d),
+                          ),
+                          ButtonSegment(
+                            value: ChartRange.year,
+                            label: Text(l10n.logScreenRange365d),
                           ),
                         ],
-                        emptyLabel: l10n.logScreenChartEmpty,
+                        selected: {_selectedRange},
+                        onSelectionChanged: (selection) {
+                          if (!mounted) return;
+                          setState(() {
+                            _selectedRange = selection.first;
+                          });
+                        },
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    // Legend
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 4,
-                      children: [
-                        _LegendItem(color: colorScheme.primary, label: l10n.logScreenCigarettePlural(addictionName)),
-                        _LegendItem(color: Colors.red, label: 'Mood'),
-                        _LegendItem(color: Colors.orange, label: 'BPM'),
-                        _LegendItem(color: Colors.teal, label: 'Stress (HRV)'),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 220,
+                    child: LineChart(
+                      datasets: [
+                        LineChartData(
+                          entries: combinedEntries
+                              .map((e) => LineChartEntry(label: e.label, value: e.triggerValue))
+                              .toList(),
+                          color: colorScheme.primary,
+                        ),
+                        LineChartData(
+                          entries: combinedEntries
+                              .map((e) => LineChartEntry(label: e.label, value: e.moodValue))
+                              .toList(),
+                          color: Colors.red,
+                          minValue: -30,
+                          maxValue: 30,
+                        ),
+                        LineChartData(
+                          entries: combinedEntries
+                              .map((e) => LineChartEntry(label: e.label, value: e.heartRateValue))
+                              .toList(),
+                          color: Colors.orange,
+                          minValue: 80,
+                          maxValue: 130,
+                        ),
+                        LineChartData(
+                          entries: combinedEntries
+                              .map((e) => LineChartEntry(label: e.label, value: e.stressValue))
+                              .toList(),
+                          color: Colors.teal,
+                          minValue: 0,
+                          maxValue: 100,
+                        ),
                       ],
+                      emptyLabel: l10n.logScreenChartEmpty,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Legend
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 4,
+                    children: [
+                      _LegendItem(color: colorScheme.primary, label: l10n.logScreenCigarettePlural(addictionName)),
+                      _LegendItem(color: Colors.red, label: 'Mood'),
+                      _LegendItem(color: Colors.orange, label: 'BPM'),
+                      _LegendItem(color: Colors.teal, label: 'Stress (HRV)'),
+                    ],
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.logScreenSelectedDayHeader,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade700,
-                        fontWeight: FontWeight.w500,
-                      ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.logScreenSelectedDayHeader,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade700,
+                      fontWeight: FontWeight.w500,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      formattedDate,
-                      style: const TextStyle(
-                        fontSize: 20,
-                       // fontWeight: FontWeight.bold,
-                      ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    formattedDate,
+                    style: const TextStyle(
+                      fontSize: 20,
                     ),
-                    const SizedBox(height: 12),
-                    const Divider(),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(Icons.calendar_month, size: 20, color: Colors.grey),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            l10n.logScreenSelectedDayText(
-                                  selectedCount.toString(),
-                                  formattedDate,
-                                  addictionName,
-                                ),
-                            style: TextStyle(
-                              fontSize: 16,
-                              //color: Colors.grey.shade700,
-                            ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.calendar_month, size: 20, color: Colors.grey),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          l10n.logScreenSelectedDayText(
+                                selectedCount.toString(),
+                                formattedDate,
+                                addictionName,
+                              ),
+                          style: const TextStyle(
+                            fontSize: 16,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (_dailyEntries[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)]?.moods.isNotEmpty ?? false)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(Icons.sentiment_satisfied_alt, color: Colors.red, size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _dailyEntries[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)]!
-                                    .moods
-                                    .map((m) => "${DailyLogService.moodEmojis[m]} ${_getMoodLabel(m, context)}")
-                                    .join(", "),
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(Icons.favorite, color: Colors.orange, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.logTodayHR(displayHR.round().toString()),
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  if (_dailyEntries[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)]?.moods.isNotEmpty ?? false)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.sentiment_satisfied_alt, color: Colors.red, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _dailyEntries[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)]!
+                                  .moods
+                                  .map((m) => "${DailyLogService.moodEmojis[m] ?? _customEmojis[m] ?? '✨'} ${_getMoodLabel(m, context)}")
+                                  .join(", "),
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(Icons.psychology, color: Colors.teal, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.logTodayStress(displayStress.round().toString()),
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ],
+                  if (_dailyEntries[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)]?.activities.isNotEmpty ?? false)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.directions_run, color: Colors.green, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _dailyEntries[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)]!
+                                  .activities
+                                  .map((a) => "${DailyLogService.activityEmojis[a] ?? _customEmojis[a] ?? '✨'} ${_getActivityLabel(a, context)}")
+                                  .join(", "),
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
+                  if (_dailyEntries[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)]?.others.isNotEmpty ?? false)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.more_horiz, color: Colors.blue, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _dailyEntries[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)]!
+                                  .others
+                                  .map((o) => "${DailyLogService.otherEmojis[o] ?? _customEmojis[o] ?? '✨'} ${_getOtherLabel(o, context)}")
+                                  .join(", "),
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.favorite, color: Colors.orange, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.logTodayHR(displayHR.round().toString()),
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.psychology, color: Colors.teal, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.logTodayStress(displayStress.round().toString()),
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 12),
-            if (_log.isEmpty && _dailyEntries.isEmpty)
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  l10n.logScreenEmptyHint(addictionName),
-                //  style: const TextStyle(fontSize: 14, color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
+          ),
+          const SizedBox(height: 12),
+          if (_log.isEmpty && _dailyEntries.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                l10n.logScreenEmptyHint(addictionName),
+                textAlign: TextAlign.center,
               ),
-          ],
-        ),
+            ),
+        ],
       ),
-      bottomNavigationBar: CustomNavigationBar(currentIndex: 2, setThemeMode: widget.setThemeMode),
     );
   }
 
   Future<void> _showEditDialog(DateTime day) async {
-    if (_selectedAddiction == null) return;
+    if (widget.selectedAddiction == null) return;
     
     final initial = _countForDay(day);
     final controller = TextEditingController(text: initial.toString());
     final l10n = AppLocalizations.of(context)!;
-    final addictionName = _selectedAddiction!.name;
+    final addictionName = widget.selectedAddiction!.name;
 
     final result = await showDialog<_EditResult>(
       context: context,
@@ -717,10 +737,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
     if (result == null) return;
 
     if (result == _EditResult.delete) {
-      await DopamineLogService.removeDate(_selectedAddiction!.id, day);
+      await DopamineLogService.removeDate(widget.selectedAddiction!.id, day);
     } else if (result == _EditResult.save) {
       final parsed = int.tryParse(controller.text.trim()) ?? 0;
-      await DopamineLogService.setCountForDate(_selectedAddiction!.id, day, parsed);
+      await DopamineLogService.setCountForDate(widget.selectedAddiction!.id, day, parsed);
     }
 
     if (!mounted) return;
@@ -748,6 +768,37 @@ class _LegendItem extends StatelessWidget {
 }
 
 enum _EditResult { save, delete }
+
+String _getActivityLabel(String activityKey, BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
+  switch (activityKey) {
+    case 'none': return l10n.activityNone;
+    case 'yoga': return l10n.activityYoga;
+    case 'gym': return l10n.activityGym;
+    case 'aerobics': return l10n.activityAerobics;
+    case 'swimming': return l10n.activitySwimming;
+    case 'team_sports': return l10n.activityTeamSports;
+    case 'running': return l10n.activityRunning;
+    case 'cycling': return l10n.activityCycling;
+    case 'walking': return l10n.activityWalking;
+    default: return activityKey;
+  }
+}
+
+String _getOtherLabel(String otherKey, BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
+  switch (otherKey) {
+    case 'travel': return l10n.otherTravel;
+    case 'stress': return l10n.otherStress;
+    case 'meditation': return l10n.otherMeditation;
+    case 'journaling': return l10n.otherJournaling;
+    case 'kegel': return l10n.otherKegel;
+    case 'breathing': return l10n.otherBreathing;
+    case 'illness': return l10n.otherIllness;
+    case 'alcohol': return l10n.otherAlcohol;
+    default: return otherKey;
+  }
+}
 
 String _getMoodLabel(String moodKey, BuildContext context) {
   final l10n = AppLocalizations.of(context)!;

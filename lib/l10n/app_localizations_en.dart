@@ -659,4 +659,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String logTodayStress(Object stress) {
     return 'Stress (HRV): $stress ms';
   }
+
+  @override
+  String get addCustomItemTitle => 'Add custom item';
+
+  @override
+  String get addCustomItemNameLabel => 'Name';
+
+  @override
+  String get addCustomItemCategoryLabel => 'Category';
+
+  @override
+  String get categoryMood => 'Mood';
+
+  @override
+  String get categoryActivity => 'Activity';
+
+  @override
+  String get categoryOther => 'Other';
 }
