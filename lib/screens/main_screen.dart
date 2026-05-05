@@ -5,7 +5,7 @@ import 'stats_screen.dart';
 import 'config_screen.dart';
 import 'about_screen.dart';
 import '../services/smoke_log_service.dart';
-import '../widget_provider.dart';
+//import '../widget_provider.dart';
 import 'package:dopamine_tracker/l10n/app_localizations.dart';
 
 class MainScreen extends StatefulWidget {
@@ -135,87 +135,88 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        toolbarHeight: 70,
+        toolbarHeight: 90,
+        centerTitle: true,
+        scrolledUnderElevation: 0,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              //SizedBox(width:20),
-              // Top row: Title centered
-             // Center(
-                //child:
-                const Text(
-                  'Dopamine Tracker',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              //),
-              // Bottom row: Addiction Selector and Add Button
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  if (_addictions.isNotEmpty)
-                    SizedBox(
-                      width: 90,
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<Addiction>(
-                          value: _selectedAddiction,
-                          isExpanded: true,
-                          icon: const Icon(Icons.keyboard_arrow_down, size: 20),
-                          items: _addictions
-                              .map((a) => DropdownMenuItem(
-                                    value: a,
-                                    child: Text(a.name,
-                                        style: const TextStyle(fontSize: 16)),
-                                  ))
-                              .toList(),
-                          onChanged: (val) {
-                            setState(() {
-                              _selectedAddiction = val;
-                            });
-                          },
-                        ),
+          children: [
+            const Text(
+              'Dopamine Tracker',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (_addictions.isNotEmpty)
+                  DropdownButtonHideUnderline(
+                    child: DropdownButton<Addiction>(
+                      value: _selectedAddiction,
+                      icon: const Icon(Icons.keyboard_arrow_down, size: 20),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w500,
                       ),
-                    )
-                  else
-                    const SizedBox(width: 90),
-                ],
-              ),
-            ],
-          ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add, size: 20),
-            onPressed: _showAddAddictionDialog,
-            tooltip: "Aggiungi dipendenza",
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'config') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ConfigScreen(setThemeMode: widget.setThemeMode)),
-                ).then((_) => _loadAddictions());
-              } else if (value == 'about') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AboutScreen()),
-                );
-              }
-            },
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem(
-                value: 'config',
-                child: Text(l10n.homeMenuConfig),
-              ),
-              PopupMenuItem(
-                value: 'about',
-                child: Text(l10n.homeMenuAbout),
-              ),
-            ],
-          ),
-          const SizedBox(width: 8),
-        ],
+                      items: _addictions
+                          .map((a) => DropdownMenuItem(
+                                value: a,
+                                child: Text(a.name),
+                              ))
+                          .toList(),
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedAddiction = val;
+                        });
+                      },
+                    ),
+                  )
+                else
+                  const SizedBox(),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.add, size: 20),
+                      onPressed: _showAddAddictionDialog,
+                      tooltip: "Aggiungi dipendenza",
+                    ),
+                    PopupMenuButton<String>(
+                      iconSize: 20,
+                      onSelected: (value) {
+                        if (value == 'config') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ConfigScreen(
+                                    setThemeMode: widget.setThemeMode)),
+                          ).then((_) => _loadAddictions());
+                        } else if (value == 'about') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const AboutScreen()),
+                          );
+                        }
+                      },
+                      itemBuilder: (BuildContext context) => [
+                        PopupMenuItem(
+                          value: 'config',
+                          child: Text(l10n.homeMenuConfig),
+                        ),
+                        PopupMenuItem(
+                          value: 'about',
+                          child: Text(l10n.homeMenuAbout),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
       body: IndexedStack(
         index: _currentIndex,
