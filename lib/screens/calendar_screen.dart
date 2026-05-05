@@ -501,14 +501,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         ),
                         LineChartData(
                           entries: combinedEntries
-                              .map((e) => LineChartEntry(label: e.label, value: e.moodValue))
-                              .toList(),
-                          color: Colors.red,
-                          minValue: -30,
-                          maxValue: 30,
-                        ),
-                        LineChartData(
-                          entries: combinedEntries
                               .map((e) => LineChartEntry(label: e.label, value: e.heartRateValue))
                               .toList(),
                           color: Colors.orange,
@@ -534,7 +526,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     runSpacing: 4,
                     children: [
                       _LegendItem(color: colorScheme.primary, label: l10n.logScreenCigarettePlural(addictionName)),
-                      _LegendItem(color: Colors.red, label: 'Mood'),
                       _LegendItem(color: Colors.orange, label: 'BPM'),
                       _LegendItem(color: Colors.teal, label: 'Stress (HRV)'),
                     ],

@@ -221,22 +221,22 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String friendsLastSmokedText(String lastSmoked, String trigger) {
-    return 'Ultimo $trigger: \n $lastSmoked';
+    return 'Ultimo $trigger: $lastSmoked';
   }
 
   @override
   String friendsCigarettesAvoidedText(String cigAvoided, String trigger) {
-    return '$trigger evitati: \n $cigAvoided';
+    return '$trigger evitati: $cigAvoided';
   }
 
   @override
   String friendsMoneySavedText(String moneySaved) {
-    return 'Punti beneficio: \n $moneySaved';
+    return 'Punti beneficio: $moneySaved';
   }
 
   @override
   String friendsLastAnnouncedText(String lastAnnounced) {
-    return 'Ultimo Annuncio: \n $lastAnnounced';
+    return 'Ultimo Annuncio: $lastAnnounced';
   }
 
   @override
@@ -384,12 +384,12 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String homeSmokedTodayText(String cigarettesSmoked, String trigger) {
-    return '$trigger oggi: \n $cigarettesSmoked';
+    return '$trigger oggi: $cigarettesSmoked';
   }
 
   @override
   String homeHoursWithoutSmokingText(String hours, String trigger) {
-    return 'Ore senza $trigger: \n $hours';
+    return 'Ore senza $trigger: $hours';
   }
 
   @override

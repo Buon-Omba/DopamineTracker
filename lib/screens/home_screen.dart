@@ -471,32 +471,33 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
             ),
           ),
-          const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                          ElevatedButton.icon(
-                          icon: Icon(
-                            Icons.add_circle_outline,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                          onPressed: _logTrigger,
-                          label: Text(
-                            l10n.homeLogCigaretteButton(addictionName),
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 28),
-                          ),
-                        ),
-                      const SizedBox(width: 12),
-                    ],
+          const SizedBox(height: 3),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton.icon(
+                icon: Icon(
+                  Icons.add_circle_outline,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                onPressed: _logTrigger,
+                label: Text(
+                  l10n.homeLogCigaretteButton(addictionName),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
                   ),
-          const SizedBox(height: 10),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 17, horizontal: 28),
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
+          ),
+          const SizedBox(height: 15),
         ],
       ),
     );

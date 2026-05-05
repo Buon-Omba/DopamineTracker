@@ -403,7 +403,7 @@
       }
     }
   },
-  "homeHoursWithoutSmokingText": "Hours without using {trigger}: \n {hours}",
+  "homeHoursWithoutSmokingText": "Hours without {trigger}: \n {hours}",
   "@homeHoursWithoutSmokingText": {
     "placeholders": {
       "hours": {

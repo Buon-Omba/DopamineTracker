@@ -707,7 +707,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeHoursWithoutSmokingText.
   ///
   /// In en, this message translates to:
-  /// **'Hours without using {trigger}: \n {hours}'**
+  /// **'Hours without {trigger}: \n {hours}'**
   String homeHoursWithoutSmokingText(String hours, String trigger);
 
   /// No description provided for @homeLogCigaretteButton.
