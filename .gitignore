@@ -58,3 +58,4 @@ api/users_data.db
 /android/key.properties
 .env
 .artifacts\
+/.artifacts/
