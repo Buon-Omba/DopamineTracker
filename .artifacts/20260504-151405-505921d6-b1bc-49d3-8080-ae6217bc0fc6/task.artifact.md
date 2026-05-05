@@ -1,4 +1,0 @@
-- [/] Refactor MainScreen AppBar
-    - [ ] Center title text
-    - [ ] Align dropdown to the left with proper padding
-    - [ ] Ensure consistent spacing with actions menu
