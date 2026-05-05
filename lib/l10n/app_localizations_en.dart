@@ -379,12 +379,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String homeSmokedTodayText(String cigarettesSmoked, String trigger) {
-    return '${trigger}s used today: $cigarettesSmoked';
+    return '${trigger}s used today: \n $cigarettesSmoked';
   }
 
   @override
   String homeHoursWithoutSmokingText(String hours, String trigger) {
-    return 'Hours without $trigger: $hours';
+    return 'Hours without $trigger: \n $hours';
   }
 
   @override
