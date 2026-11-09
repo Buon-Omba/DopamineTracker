@@ -14,20 +14,3 @@ Dopamine Tracker is a mobile app designed to help users quit using their dopamin
 - Manually emotion track so you can see why you use your dopamine trigger
 
 Note: Stress isn't really saved in Health Connect so the app uses different meausure to extimate it.
-
-```
-            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-                    Version 2, December 2004
-
- Copyright (C) 2004 Sam Hocevar
-  22 rue de Plaisance, 75014 Paris, France
- Everyone is permitted to copy and distribute verbatim or modified
- copies of this license document, and changing it is allowed as long
- as the name is changed.
-
-            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
-
-  0. You just DO WHAT THE FUCK YOU WANT TO.
-
-```
