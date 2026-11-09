@@ -59,3 +59,7 @@ api/users_data.db
 .env
 .artifacts\
 /.artifacts/
+
+# Sync API secrets and local data
+api/allowed_api_keys.json
+api/users_data.db

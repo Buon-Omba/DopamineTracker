@@ -16,7 +16,7 @@ def load_api_keys():
     try:
         with open(API_KEYS_FILE, 'r') as file:
             keys = json.load(file)
-        print(f"Loaded API Keys: {keys}")
+        print(f"Loaded {len(keys)} API key(s)")
         # Extract API keys from the list of dictionaries
         return [key['api_key'] for key in keys if 'api_key' in key]
     except (FileNotFoundError, json.JSONDecodeError):
@@ -38,8 +38,6 @@ def init_db():
 
 def validate_request():
     api_key = request.headers.get('X-API-Key')
-    print(f"Received API Key: {api_key}")
-    print(f"Allowed Keys: {ALLOWED_API_KEYS}")
 
     if not api_key or api_key not in ALLOWED_API_KEYS:
         return False
@@ -52,7 +50,6 @@ def sync():
         return jsonify({"error": "Unauthorized request"}), 401
 
     data = request.json
-    print(f"Received Data: {data}")
 
     # Extract data
     device_id = data.get('device_id')
